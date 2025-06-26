@@ -563,4 +563,50 @@ function attachTutorRegisterListener() {
 }
 
 // Call this function every time you show the Become a Tutor tab
-attachTutorRegisterListener(); 
+attachTutorRegisterListener();
+
+document.addEventListener('submit', function(e) {
+    if (e.target && e.target.id === 'loginFormElement') {
+        e.preventDefault();
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+        login(email, password);
+    }
+    if (e.target && e.target.id === 'registerFormElement') {
+        e.preventDefault();
+        const firstName = document.getElementById('regFirstName').value;
+        const surname = document.getElementById('regSurname').value;
+        const email = document.getElementById('regEmail').value;
+        const password = document.getElementById('regPassword').value;
+        register(firstName, surname, email, password);
+    }
+    if (e.target && e.target.id === 'tutorRegisterForm') {
+        e.preventDefault();
+        const formData = {
+            firstName: document.getElementById('tutorFirstName').value,
+            surname: document.getElementById('tutorSurname').value,
+            email: document.getElementById('tutorEmail').value,
+            subjects: document.getElementById('tutorSubjects').value,
+            description: document.getElementById('tutorDescription').value
+        };
+        tutorRegister(formData);
+    }
+    if (e.target && e.target.id === 'bookingForm') {
+        e.preventDefault();
+        const formData = {
+            date: document.getElementById('bookingDate').value,
+            timePeriod: document.getElementById('bookingTimePeriod').value,
+            description: document.getElementById('bookingDescription').value
+        };
+        createBooking(formData);
+    }
+    if (e.target && e.target.id === 'profileForm') {
+        e.preventDefault();
+        const formData = {
+            firstName: document.getElementById('profileFirstName').value,
+            surname: document.getElementById('profileSurname').value,
+            email: document.getElementById('profileEmail').value
+        };
+        updateProfile(formData);
+    }
+}); 
