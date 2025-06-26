@@ -359,8 +359,8 @@ app.put('/api/profile', authenticateToken, async (req, res) => {
 // Serve static files
 app.use(express.static('public'));
 
-// Catch-all: serve frontend for any other route
-app.get('*', (req, res) => {
+// Serve frontend for non-API routes
+app.get(/^\/(?!api).*/, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
