@@ -16,7 +16,11 @@ app.use(cors());
 app.use(express.json());
 app.use(helmet());
 app.disable('x-powered-by');
-
+app.use(express.static('public', {
+  setHeaders: (res, path) => {
+    res.setHeader('Cache-Control', 'public, max-age=31536000');
+  }
+}));
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI, {
@@ -34,22 +38,18 @@ const Booking = require('./model/Booking');
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: 'tutorsystemparnell@gmail.com', // Replace with your email
-    pass: 'lnqr bwcp rffy bxlf' // Replace with your app password
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
   }
 });
 
 // JWT Secret
-const JWT_SECRET = 'your-super-secret-jwt-key';
+const JWT_SECRET = process.env.JWT_SECRET;
 
 // Authentication middleware
 const authenticateToken = (req, res, next) => {
   const token = req.headers['authorization']?.split(' ')[1];
-  
-  if (!token) {
-    return res.status(401).json({ message: 'Access token required' });
-  }
-
+  if (!token) return res.status(401).json({ message: 'Access token required' });
   jwt.verify(token, JWT_SECRET, (err, user) => {
     if (err) return res.status(403).json({ message: 'Invalid token' });
     req.user = user;
@@ -63,26 +63,14 @@ const authenticateToken = (req, res, next) => {
 app.post('/api/register', async (req, res) => {
   try {
     const { firstName, surname, email, password } = req.body;
-    
-    // Check if user already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: 'User already exists' });
+    if (!firstName || !surname || !email || !password) {
+      return res.status(400).json({ message: 'All fields are required' });
     }
-
-    // Hash password
+    const existingUser = await User.findOne({ email });
+    if (existingUser) return res.status(400).json({ message: 'User already exists' });
     const hashedPassword = await bcrypt.hash(password, 10);
-    
-    // Create user
-    const user = new User({
-      firstName,
-      surname,
-      email,
-      password: hashedPassword
-    });
-    
+    const user = new User({ firstName, surname, email, password: hashedPassword });
     await user.save();
-    
     res.status(201).json({ message: 'User registered successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
@@ -93,26 +81,15 @@ app.post('/api/register', async (req, res) => {
 app.post('/api/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-    
-    // Find user
     const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ message: 'Invalid credentials' });
-    }
-    
-    // Check password
+    if (!user) return res.status(400).json({ message: 'Invalid credentials' });
     const validPassword = await bcrypt.compare(password, user.password);
-    if (!validPassword) {
-      return res.status(400).json({ message: 'Invalid credentials' });
-    }
-    
-    // Create token
+    if (!validPassword) return res.status(400).json({ message: 'Invalid credentials' });
     const token = jwt.sign(
       { userId: user._id, email: user.email, isAdmin: user.isAdmin },
       JWT_SECRET,
       { expiresIn: '24h' }
     );
-    
     res.json({
       token,
       user: {
@@ -128,26 +105,34 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// Get Subjects
+// Get Subjects (with pagination)
 app.get('/api/subjects', async (req, res) => {
   try {
-    const subjects = await Subject.find();
-    res.json(subjects);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 9;
+    const skip = (page - 1) * limit;
+    const [subjects, total] = await Promise.all([
+      Subject.find().skip(skip).limit(limit),
+      Subject.countDocuments()
+    ]);
+    res.json({ subjects, total });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
 
-// Get Approved Tutors by Subject
+// Get Approved Tutors by Subject (with pagination)
 app.get('/api/tutors/:subject', async (req, res) => {
   try {
     const { subject } = req.params;
-    const tutors = await Tutor.find({
-      subjects: subject,
-      isApproved: true
-    }).select('-description');
-    
-    res.json(tutors);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 9;
+    const skip = (page - 1) * limit;
+    const [tutors, total] = await Promise.all([
+      Tutor.find({ subjects: subject, isApproved: true }).skip(skip).limit(limit).select('-description'),
+      Tutor.countDocuments({ subjects: subject, isApproved: true })
+    ]);
+    res.json({ tutors, total });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
@@ -157,42 +142,28 @@ app.get('/api/tutors/:subject', async (req, res) => {
 app.post('/api/tutor/register', async (req, res) => {
   try {
     const { firstName, surname, email, subjects, description } = req.body;
-    
-    // Check if tutor already exists
-    const existingTutor = await Tutor.findOne({ email });
-    if (existingTutor) {
-      return res.status(400).json({ message: 'Tutor already registered' });
+    if (!firstName || !surname || !email || !subjects || !description) {
+      return res.status(400).json({ message: 'All fields are required' });
     }
-    
-    // Create tutor
-    const tutor = new Tutor({
-      firstName,
-      surname,
-      email,
-      subjects,
-      description,
-      isApproved: false
-    });
-    
+    const existingTutor = await Tutor.findOne({ email });
+    if (existingTutor) return res.status(400).json({ message: 'Tutor already registered' });
+    const tutor = new Tutor({ firstName, surname, email, subjects, description, isApproved: false });
     await tutor.save();
-    
     // Send email to manager
     const mailOptions = {
-      from: 'tutorsystemparnell@gmail.com',
-      to: 'tutorsystemparnell@gmail.com', // Replace with manager email
+      from: process.env.EMAIL_USER,
+      to: process.env.EMAIL_USER,
       subject: 'New Tutor Registration',
       html: `
         <h2>New Tutor Registration</h2>
         <p><strong>Name:</strong> ${firstName} ${surname}</p>
         <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Subjects:</strong> ${subjects.join(', ')}</p>
+        <p><strong>Subjects:</strong> ${Array.isArray(subjects) ? subjects.join(', ') : subjects}</p>
         <p><strong>Description:</strong> ${description}</p>
         <p>Please review and approve this tutor registration.</p>
       `
     };
-    
     await transporter.sendMail(mailOptions);
-    
     res.status(201).json({ message: 'Tutor registration submitted successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
@@ -222,7 +193,7 @@ app.post('/api/bookings', authenticateToken, async (req, res) => {
     
     // Send email to tutor
     const tutorMailOptions = {
-      from: 'tutorsystemparnell@gmail.com',
+      from: process.env.EMAIL_USER,
       to: tutor.email,
       subject: 'New Booking Request',
       html: `
@@ -307,7 +278,7 @@ app.put('/api/admin/tutors/:id/approve', authenticateToken, async (req, res) => 
     
     // Send approval email to tutor
     const mailOptions = {
-      from: 'tutorsystemparnell@gmail.com',
+      from: process.env.EMAIL_USER,
       to: tutor.email,
       subject: 'Tutor Registration Approved',
       html: `
@@ -359,24 +330,21 @@ app.put('/api/profile', authenticateToken, async (req, res) => {
   }
 });
 
-// Serve static files
-app.use(express.static('public'));
-
-// Serve frontend for non-API routes only (catch-all)
-app.get(/^\/(?!api).*/, (req, res) => {
+// Serve frontend
+app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Initialize default manager account
 const initializeManager = async () => {
   try {
-    const existingManager = await User.findOne({ email: 'tutorsystemparnell@gmail.com' });
+    const existingManager = await User.findOne({ email: process.env.EMAIL_USER });
     if (!existingManager) {
-      const hashedPassword = await bcrypt.hash('GRE_is_the_best_house', 10);
+      const hashedPassword = await bcrypt.hash(process.env.MANAGER_PASSWORD, 10);
       const manager = new User({
-        firstName: 'Eric',
-        surname: 'Yang',
-        email: 'tutorsystemparnell@gmail.com',
+        firstName: 'Manager',
+        surname: 'Account',
+        email: process.env.EMAIL_USER,
         password: hashedPassword,
         isAdmin: true
       });

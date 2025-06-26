@@ -488,7 +488,6 @@ document.addEventListener('DOMContentLoaded', function() {
         showLogin();
     }
     
-    // Login form
     document.getElementById('loginFormElement').addEventListener('submit', function(e) {
         e.preventDefault();
         const email = document.getElementById('loginEmail').value;
@@ -496,7 +495,6 @@ document.addEventListener('DOMContentLoaded', function() {
         login(email, password);
     });
     
-    // Register form
     document.getElementById('registerFormElement').addEventListener('submit', function(e) {
         e.preventDefault();
         const firstName = document.getElementById('regFirstName').value;
@@ -506,7 +504,6 @@ document.addEventListener('DOMContentLoaded', function() {
         register(firstName, surname, email, password);
     });
     
-    // Tutor registration form
     document.getElementById('tutorRegisterForm').addEventListener('submit', function(e) {
         e.preventDefault();
         const formData = {
@@ -519,18 +516,6 @@ document.addEventListener('DOMContentLoaded', function() {
         tutorRegister(formData);
     });
     
-    // Booking form
-    document.getElementById('bookingForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const formData = {
-            date: document.getElementById('bookingDate').value,
-            timePeriod: document.getElementById('bookingTimePeriod').value,
-            description: document.getElementById('bookingDescription').value
-        };
-        createBooking(formData);
-    });
-    
-    // Profile form
     document.getElementById('profileForm').addEventListener('submit', function(e) {
         e.preventDefault();
         const formData = {
@@ -539,6 +524,16 @@ document.addEventListener('DOMContentLoaded', function() {
             email: document.getElementById('profileEmail').value
         };
         updateProfile(formData);
+    });
+    
+    document.getElementById('bookingForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = {
+            date: document.getElementById('bookingDate').value,
+            timePeriod: document.getElementById('bookingTimePeriod').value,
+            description: document.getElementById('bookingDescription').value
+        };
+        createBooking(formData);
     });
 });
 
