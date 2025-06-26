@@ -55,21 +55,23 @@
     <div class="container-fluid">
         <!-- Navigation -->
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark" style="position: fixed; top: 0; left: 0; right: 0; width: 100vw; z-index: 1050; border-radius: 0;">
-            <a class="navbar-brand" href="#">
-                <i class="fas fa-graduation-cap me-2"></i>
-                Parnell Tutor System
-            </a>
-            <div class="navbar-nav ms-auto" id="navItems">
-                <button class="btn btn-outline-light me-2" onclick="showLogin()">Login</button>
-                <button class="btn btn-primary" onclick="showRegister()">Register</button>
+            <div class="d-flex justify-content-between align-items-center w-100 px-4">
+                <a class="navbar-brand m-0" href="#">
+                    <i class="fas fa-graduation-cap me-2"></i>
+                    Parnell Tutor System
+                </a>
+                <div class="navbar-nav flex-row" id="navItems">
+                    <button class="btn btn-outline-light me-2" onclick="showLogin()">Login</button>
+                    <button class="btn btn-primary" onclick="showRegister()">Register</button>
+                </div>
             </div>
         </nav>
 
         <!-- Main Content -->
         <div class="container" style="padding-top: 80px;">
             <!-- Login Form -->
-            <div id="loginForm" style="display: none; min-height: 80vh; display: flex; align-items: center; justify-content: center;">
-                <div class="col-md-6 col-lg-4">
+            <div id="loginFormWrapper" style="display: flex; min-height: 80vh; align-items: center; justify-content: center;">
+                <div id="loginForm" style="display: none; width: 100%; max-width: 400px;">
                     <div class="card">
                         <div class="card-body p-4">
                             <h3 class="text-center mb-4">Login</h3>
