@@ -540,4 +540,25 @@ document.addEventListener('DOMContentLoaded', function() {
         };
         updateProfile(formData);
     });
-}); 
+});
+
+function attachTutorRegisterListener() {
+    const form = document.getElementById('tutorRegisterForm');
+    if (form && !form.hasAttribute('data-listener')) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = {
+                firstName: document.getElementById('tutorFirstName').value,
+                surname: document.getElementById('tutorSurname').value,
+                email: document.getElementById('tutorEmail').value,
+                subjects: document.getElementById('tutorSubjects').value,
+                description: document.getElementById('tutorDescription').value
+            };
+            tutorRegister(formData);
+        });
+        form.setAttribute('data-listener', 'true');
+    }
+}
+
+// Call this function every time you show the Become a Tutor tab
+attachTutorRegisterListener(); 
