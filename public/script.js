@@ -3,6 +3,10 @@ let currentUser = null;
 let currentToken = null;
 let selectedTutor = null;
 let selectedSubject = null;
+let currentPage = 1;
+const subjectsPerPage = 9;
+let bookingsPage = 1;
+const bookingsPerPage = 10;
 
 // API Base URL
 const API_BASE = 'https://tutorial-signup-d60837d8fe04.herokuapp.com/api';
@@ -173,17 +177,17 @@ async function loadDashboard() {
     loadSubjects();
 }
 
-async function loadSubjects() {
+async function loadSubjects(page = 1) {
     try {
-        const subjects = await apiCall('/subjects');
+        const data = await apiCall(`/subjects?page=${page}&limit=${subjectsPerPage}`);
         const subjectsList = document.getElementById('subjectsList');
         
-        if (subjects.length === 0) {
+        if (data.subjects.length === 0) {
             subjectsList.innerHTML = '<div class="col-12"><div class="alert alert-info">No subjects available yet.</div></div>';
             return;
         }
         
-        subjectsList.innerHTML = subjects.map(subject => `
+        subjectsList.innerHTML = data.subjects.map(subject => `
             <div class="col-md-4 mb-4">
                 <div class="card booking-card">
                     <div class="card-body">
@@ -196,6 +200,25 @@ async function loadSubjects() {
                 </div>
             </div>
         `).join('');
+        
+        // Render pagination controls
+        const pagination = document.getElementById('pagination');
+        pagination.innerHTML = `
+            <nav>
+                <ul class="pagination">
+                    <li class="page-item">
+                        <a class="page-link" href="#" aria-label="Previous" onclick="loadSubjects(${Math.max(1, page - 1)}); return false;">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="#" aria-label="Next" onclick="loadSubjects(${Math.min(data.total, page + 1)}); return false;">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        `;
     } catch (error) {
         showAlert(error.message, 'danger');
     }
@@ -271,17 +294,17 @@ async function createBooking(formData) {
     }
 }
 
-async function loadUserBookings() {
+async function loadUserBookings(page = 1) {
     try {
-        const bookings = await apiCall('/bookings/user');
+        const data = await apiCall(`/bookings/user?page=${page}&limit=${bookingsPerPage}`);
         const bookingsList = document.getElementById('bookingsList');
         
-        if (bookings.length === 0) {
+        if (data.bookings.length === 0) {
             bookingsList.innerHTML = '<div class="col-12"><div class="alert alert-info">No bookings found.</div></div>';
             return;
         }
         
-        bookingsList.innerHTML = bookings.map(booking => `
+        bookingsList.innerHTML = data.bookings.map(booking => `
             <div class="col-md-6 mb-3">
                 <div class="card">
                     <div class="card-body">
@@ -297,6 +320,25 @@ async function loadUserBookings() {
                 </div>
             </div>
         `).join('');
+        
+        // Render pagination controls
+        const pagination = document.getElementById('bookingsPagination');
+        pagination.innerHTML = `
+            <nav>
+                <ul class="pagination">
+                    <li class="page-item">
+                        <a class="page-link" href="#" aria-label="Previous" onclick="loadUserBookings(${Math.max(1, page - 1)}); return false;">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="#" aria-label="Next" onclick="loadUserBookings(${Math.min(data.total, page + 1)}); return false;">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        `;
     } catch (error) {
         showAlert(error.message, 'danger');
     }
