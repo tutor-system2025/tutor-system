@@ -55,10 +55,10 @@
     <div class="container-fluid">
         <!-- Navigation -->
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
-            <div class="container">
+            <div class="container-fluid">
                 <a class="navbar-brand" href="#">
                     <i class="fas fa-graduation-cap me-2"></i>
-                    Tutor System
+                    Parnell Tutor System
                 </a>
                 <div class="navbar-nav ms-auto" id="navItems">
                     <button class="btn btn-outline-light me-2" onclick="showLogin()">Login</button>
@@ -70,7 +70,7 @@
         <!-- Main Content -->
         <div class="container">
             <!-- Login Form -->
-            <div id="loginForm" class="row justify-content-center" style="display: none;">
+            <div id="loginForm" class="row min-vh-100 align-items-center justify-content-center" style="display: none;">
                 <div class="col-md-6 col-lg-4">
                     <div class="card">
                         <div class="card-body p-4">
@@ -111,7 +111,7 @@
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Email</label>
-                                    <input type="email" class="form-control" id="regEmail" required>
+                                    <input type="email" class="form-control" id="regEmail" placeholder="Enter your email" required>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Password</label>
