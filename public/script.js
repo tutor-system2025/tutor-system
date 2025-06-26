@@ -507,18 +507,16 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Tutor registration form
-    document.addEventListener('submit', function(e) {
-        if (e.target && e.target.id === 'tutorRegisterForm') {
-            e.preventDefault();
-            const formData = {
-                firstName: document.getElementById('tutorFirstName').value,
-                surname: document.getElementById('tutorSurname').value,
-                email: document.getElementById('tutorEmail').value,
-                subjects: document.getElementById('tutorSubjects').value,
-                description: document.getElementById('tutorDescription').value
-            };
-            tutorRegister(formData);
-        }
+    document.getElementById('tutorRegisterForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = {
+            firstName: document.getElementById('tutorFirstName').value,
+            surname: document.getElementById('tutorSurname').value,
+            email: document.getElementById('tutorEmail').value,
+            subjects: document.getElementById('tutorSubjects').value,
+            description: document.getElementById('tutorDescription').value
+        };
+        tutorRegister(formData);
     });
     
     // Booking form
