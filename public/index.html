@@ -68,91 +68,89 @@
         </nav>
 
         <!-- Main Content -->
-        <div class="container" style="padding-top: 80px;">
-            <!-- Login Form -->
-            <div id="loginFormWrapper" style="display: flex; min-height: 80vh; align-items: center; justify-content: center;">
-                <div id="loginForm" style="display: none; width: 100%; max-width: 400px;">
-                    <div class="card">
-                        <div class="card-body p-4">
-                            <h3 class="text-center mb-4">Login</h3>
-                            <form id="loginFormElement">
-                                <div class="mb-3">
-                                    <label class="form-label">Email</label>
-                                    <input type="email" class="form-control" id="loginEmail" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Password</label>
-                                    <input type="password" class="form-control" id="loginPassword" required>
-                                </div>
-                                <button type="submit" class="btn btn-primary w-100">Login</button>
-                            </form>
-                            <div class="text-center mt-3">
-                                <a href="#" onclick="showRegister()">Don't have an account? Register</a>
+        <!-- Login Form -->
+        <div id="loginFormWrapper" style="display: flex; min-height: 80vh; align-items: center; justify-content: center;">
+            <div id="loginForm" style="display: none; width: 100%; max-width: 400px;">
+                <div class="card">
+                    <div class="card-body p-4">
+                        <h3 class="text-center mb-4">Login</h3>
+                        <form id="loginFormElement">
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" id="loginEmail" required>
                             </div>
+                            <div class="mb-3">
+                                <label class="form-label">Password</label>
+                                <input type="password" class="form-control" id="loginPassword" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">Login</button>
+                        </form>
+                        <div class="text-center mt-3">
+                            <a href="#" onclick="showRegister()">Don't have an account? Register</a>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Register Form -->
-            <div id="registerFormWrapper" style="display: flex; min-height: 80vh; align-items: center; justify-content: center;">
-                <div id="registerForm" style="display: none; width: 100%; max-width: 400px;">
-                    <div class="card">
-                        <div class="card-body p-4">
-                            <h3 class="text-center mb-4">Register</h3>
-                            <form id="registerFormElement">
-                                <div class="mb-3">
-                                    <label class="form-label">First Name</label>
-                                    <input type="text" class="form-control" id="regFirstName" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Surname</label>
-                                    <input type="text" class="form-control" id="regSurname" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Email</label>
-                                    <input type="email" class="form-control" id="regEmail" placeholder="Enter your email" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Password</label>
-                                    <input type="password" class="form-control" id="regPassword" required>
-                                </div>
-                                <button type="submit" class="btn btn-primary w-100">Register</button>
-                            </form>
-                            <div class="text-center mt-3">
-                                <a href="#" onclick="showLogin()">Already have an account? Login</a>
+        <!-- Register Form -->
+        <div id="registerFormWrapper" style="display: flex; min-height: 80vh; align-items: center; justify-content: center;">
+            <div id="registerForm" style="display: none; width: 100%; max-width: 400px;">
+                <div class="card">
+                    <div class="card-body p-4">
+                        <h3 class="text-center mb-4">Register</h3>
+                        <form id="registerFormElement">
+                            <div class="mb-3">
+                                <label class="form-label">First Name</label>
+                                <input type="text" class="form-control" id="regFirstName" required>
                             </div>
+                            <div class="mb-3">
+                                <label class="form-label">Surname</label>
+                                <input type="text" class="form-control" id="regSurname" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" id="regEmail" placeholder="Enter your email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Password</label>
+                                <input type="password" class="form-control" id="regPassword" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">Register</button>
+                        </form>
+                        <div class="text-center mt-3">
+                            <a href="#" onclick="showLogin()">Already have an account? Login</a>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Dashboard -->
-            <div id="dashboard" style="display: none;">
-                <div class="row">
-                    <div class="col-12">
-                        <ul class="nav nav-tabs w-100" id="dashboardTabs" style="position: fixed; top: 56px; left: 0; right: 0; z-index: 1040; background: #f8f9fa; border-bottom: 1px solid #dee2e6; padding-left: 16px;">
-                            <li class="nav-item">
-                                <a class="nav-link active" onclick="showTab('subjects')">Subjects</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" onclick="showTab('tutorRegister')">Become a Tutor</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" onclick="showTab('myBookings')">My Bookings</a>
-                            </li>
-                            <li class="nav-item" id="adminTab" style="display: none;">
-                                <a class="nav-link" onclick="showTab('admin')">Admin Panel</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" onclick="showTab('profile')">Profile</a>
-                            </li>
-                        </ul>
-                    </div>
+        <!-- Dashboard -->
+        <div id="dashboard" style="display: none;">
+            <div class="row">
+                <div class="col-12">
+                    <ul class="nav nav-tabs w-100" id="dashboardTabs" style="position: fixed; top: 56px; left: 0; right: 0; z-index: 1040; background: #f8f9fa; border-bottom: 1px solid #dee2e6; padding-left: 16px;">
+                        <li class="nav-item">
+                            <a class="nav-link active" onclick="showTab('subjects')">Subjects</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" onclick="showTab('tutorRegister')">Become a Tutor</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" onclick="showTab('myBookings')">My Bookings</a>
+                        </li>
+                        <li class="nav-item" id="adminTab" style="display: none;">
+                            <a class="nav-link" onclick="showTab('admin')">Admin Panel</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" onclick="showTab('profile')">Profile</a>
+                        </li>
+                    </ul>
                 </div>
-                <div style="height: 0;"></div>
-                <div id="dashboardContent" style="padding-top: 70px;">
-
+            </div>
+            <div style="height: 0;"></div>
+            <div id="dashboardContent">
                 <!-- Subjects Tab -->
                 <div id="subjectsTab" class="tab-content mt-4">
                     <div class="row" id="subjectsList">
