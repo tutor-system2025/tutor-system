@@ -95,7 +95,7 @@
             </div>
 
             <!-- Register Form -->
-            <div id="registerFormWrapper" style="display: flex; min-height: 60vh; align-items: center; justify-content: center;">
+            <div id="registerFormWrapper" style="display: flex; min-height: 80vh; align-items: center; justify-content: center;">
                 <div id="registerForm" style="display: none; width: 100%; max-width: 400px;">
                     <div class="card">
                         <div class="card-body p-4">
@@ -162,36 +162,38 @@
 
                 <!-- Tutor Registration Tab -->
                 <div id="tutorRegisterTab" class="tab-content" style="display: none;">
-                    <div class="row justify-content-center">
-                        <div class="col-md-8 col-lg-6">
-                            <div class="card mx-auto" style="max-width: 600px;">
-                                <div class="card-body">
-                                    <h4>Become a Tutor</h4>
-                                    <form id="tutorRegisterForm">
-                                        <div class="row">
-                                            <div class="col-md-6 mb-3">
-                                                <label class="form-label">First Name</label>
-                                                <input type="text" class="form-control" id="tutorFirstName" required>
+                    <div style="display: flex; min-height: 80vh; align-items: center; justify-content: center;">
+                        <div class="row justify-content-center w-100">
+                            <div class="col-md-8 col-lg-6">
+                                <div class="card mx-auto" style="max-width: 600px;">
+                                    <div class="card-body">
+                                        <h4>Become a Tutor</h4>
+                                        <form id="tutorRegisterForm">
+                                            <div class="row">
+                                                <div class="col-md-6 mb-3">
+                                                    <label class="form-label">First Name</label>
+                                                    <input type="text" class="form-control" id="tutorFirstName" required>
+                                                </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <label class="form-label">Surname</label>
+                                                    <input type="text" class="form-control" id="tutorSurname" required>
+                                                </div>
                                             </div>
-                                            <div class="col-md-6 mb-3">
-                                                <label class="form-label">Surname</label>
-                                                <input type="text" class="form-control" id="tutorSurname" required>
+                                            <div class="mb-3">
+                                                <label class="form-label">Email</label>
+                                                <input type="email" class="form-control" id="tutorEmail" required>
                                             </div>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label">Email</label>
-                                            <input type="email" class="form-control" id="tutorEmail" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label">Subjects</label>
-                                            <input type="text" class="form-control" id="tutorSubjects" placeholder="e.g., Math, Physics, Chemistry" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label">Description of your sessions</label>
-                                            <textarea class="form-control" id="tutorDescription" rows="4" placeholder="e.g., available times, session style, topics covered" required></textarea>
-                                        </div>
-                                        <button type="submit" class="btn btn-primary">Submit Application</button>
-                                    </form>
+                                            <div class="mb-3">
+                                                <label class="form-label">Subjects</label>
+                                                <input type="text" class="form-control" id="tutorSubjects" placeholder="e.g., Math, Physics, Chemistry" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Description of your sessions</label>
+                                                <textarea class="form-control" id="tutorDescription" rows="4" placeholder="e.g., available times, session style, topics covered" required></textarea>
+                                            </div>
+                                            <button type="submit" class="btn btn-primary">Submit Application</button>
+                                        </form>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -200,30 +202,34 @@
 
                 <!-- My Bookings Tab -->
                 <div id="myBookingsTab" class="tab-content mt-4" style="display: none;">
-                    <div class="row" id="bookingsList">
-                        <!-- Bookings will be loaded here -->
+                    <div style="display: flex; min-height: 80vh; align-items: center; justify-content: center;">
+                        <div class="row w-100" id="bookingsList">
+                            <!-- Bookings will be loaded here -->
+                        </div>
                     </div>
                 </div>
 
                 <!-- Admin Panel Tab -->
                 <div id="adminTab" class="tab-content mt-4" style="display: none;">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h5>Tutor Applications</h5>
-                                    <div id="tutorApplications">
-                                        <!-- Tutor applications will be loaded here -->
+                    <div style="display: flex; min-height: 80vh; align-items: center; justify-content: center;">
+                        <div class="row w-100">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5>Tutor Applications</h5>
+                                        <div id="tutorApplications">
+                                            <!-- Tutor applications will be loaded here -->
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h5>All Bookings</h5>
-                                    <div id="allBookings">
-                                        <!-- All bookings will be loaded here -->
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5>All Bookings</h5>
+                                        <div id="allBookings">
+                                            <!-- All bookings will be loaded here -->
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -233,26 +239,28 @@
 
                 <!-- Profile Tab -->
                 <div id="profileTab" class="tab-content" style="display: none;">
-                    <div class="row justify-content-center">
-                        <div class="col-md-6">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h4>Profile</h4>
-                                    <form id="profileForm">
-                                        <div class="mb-3">
-                                            <label class="form-label">First Name</label>
-                                            <input type="text" class="form-control" id="profileFirstName" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label">Surname</label>
-                                            <input type="text" class="form-control" id="profileSurname" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label">Email</label>
-                                            <input type="email" class="form-control" id="profileEmail" required>
-                                        </div>
-                                        <button type="submit" class="btn btn-primary">Update Profile</button>
-                                    </form>
+                    <div style="display: flex; min-height: 80vh; align-items: center; justify-content: center;">
+                        <div class="row justify-content-center w-100">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h4>Profile</h4>
+                                        <form id="profileForm">
+                                            <div class="mb-3">
+                                                <label class="form-label">First Name</label>
+                                                <input type="text" class="form-control" id="profileFirstName" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Surname</label>
+                                                <input type="text" class="form-control" id="profileSurname" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Email</label>
+                                                <input type="email" class="form-control" id="profileEmail" required>
+                                            </div>
+                                            <button type="submit" class="btn btn-primary">Update Profile</button>
+                                        </form>
+                                    </div>
                                 </div>
                             </div>
                         </div>
