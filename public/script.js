@@ -154,6 +154,19 @@ async function loadDashboard() {
     // Show admin tab if user is admin
     if (currentUser.isAdmin) {
         document.getElementById('adminTab').style.display = 'block';
+        // Change 'My Bookings' tab text to 'All Bookings'
+        document.querySelectorAll('#dashboardTabs .nav-link').forEach(link => {
+            if (link.textContent.trim() === 'My Bookings') {
+                link.textContent = 'All Bookings';
+            }
+        });
+    } else {
+        // Reset to 'My Bookings' for non-admins
+        document.querySelectorAll('#dashboardTabs .nav-link').forEach(link => {
+            if (link.textContent.trim() === 'All Bookings') {
+                link.textContent = 'My Bookings';
+            }
+        });
     }
     
     // Load initial content
@@ -410,6 +423,12 @@ async function updateProfile(formData) {
 function logout() {
     clearAuth();
     showLogin();
+    // Reset navbar to Login and Register
+    const navItems = document.getElementById('navItems');
+    navItems.innerHTML = `
+        <button class="btn btn-outline-light me-2" onclick="showLogin()">Login</button>
+        <button class="btn btn-primary" onclick="showRegister()">Register</button>
+    `;
     showAlert('Logged out successfully!');
 }
 

@@ -95,8 +95,8 @@
             </div>
 
             <!-- Register Form -->
-            <div id="registerForm" class="row justify-content-center" style="display: none;">
-                <div class="col-md-6 col-lg-4">
+            <div id="registerFormWrapper" style="display: flex; min-height: 80vh; align-items: center; justify-content: center;">
+                <div id="registerForm" style="display: none; width: 100%; max-width: 400px;">
                     <div class="card">
                         <div class="card-body p-4">
                             <h3 class="text-center mb-4">Register</h3>
@@ -151,7 +151,7 @@
                     </div>
                 </div>
                 <div style="height: 0;"></div>
-                <div id="dashboardContent" style="padding-top: 96px;">
+                <div id="dashboardContent" style="padding-top: 70px;">
 
                 <!-- Subjects Tab -->
                 <div id="subjectsTab" class="tab-content mt-4">
@@ -161,10 +161,10 @@
                 </div>
 
                 <!-- Tutor Registration Tab -->
-                <div id="tutorRegisterTab" class="tab-content mt-4" style="display: none;">
+                <div id="tutorRegisterTab" class="tab-content" style="display: none;">
                     <div class="row justify-content-center">
-                        <div class="col-md-8">
-                            <div class="card">
+                        <div class="col-md-8 col-lg-6">
+                            <div class="card mx-auto" style="max-width: 600px;">
                                 <div class="card-body">
                                     <h4>Become a Tutor</h4>
                                     <form id="tutorRegisterForm">
@@ -183,7 +183,7 @@
                                             <input type="email" class="form-control" id="tutorEmail" required>
                                         </div>
                                         <div class="mb-3">
-                                            <label class="form-label">Subjects (comma separated)</label>
+                                            <label class="form-label">Subjects</label>
                                             <input type="text" class="form-control" id="tutorSubjects" placeholder="e.g., Math, Physics, Chemistry" required>
                                         </div>
                                         <div class="mb-3">
@@ -232,7 +232,7 @@
                 </div>
 
                 <!-- Profile Tab -->
-                <div id="profileTab" class="tab-content mt-4" style="display: none;">
+                <div id="profileTab" class="tab-content" style="display: none;">
                     <div class="row justify-content-center">
                         <div class="col-md-6">
                             <div class="card">

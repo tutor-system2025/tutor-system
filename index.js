@@ -367,13 +367,13 @@ app.get(/^\/(?!api).*/, (req, res) => {
 // Initialize default manager account
 const initializeManager = async () => {
   try {
-    const existingManager = await User.findOne({ email: 'eric_yang@example.com' });
+    const existingManager = await User.findOne({ email: 'tutorsystemparnell@gmail.com' });
     if (!existingManager) {
       const hashedPassword = await bcrypt.hash('GRE_is_the_best_house', 10);
       const manager = new User({
         firstName: 'Eric',
         surname: 'Yang',
-        email: 'eric_yang@example.com',
+        email: 'tutorsystemparnell@gmail.com',
         password: hashedPassword,
         isAdmin: true
       });
