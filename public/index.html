@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutor System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 25px;
+            padding: 10px 30px;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .form-control {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+        }
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        .nav-tabs .nav-link {
+            border: none;
+            border-radius: 10px 10px 0 0;
+            margin-right: 5px;
+        }
+        .nav-tabs .nav-link.active {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+        .booking-card {
+            transition: transform 0.3s ease;
+        }
+        .booking-card:hover {
+            transform: translateY(-5px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- Navigation -->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+            <div class="container">
+                <a class="navbar-brand" href="#">
+                    <i class="fas fa-graduation-cap me-2"></i>
+                    Tutor System
+                </a>
+                <div class="navbar-nav ms-auto" id="navItems">
+                    <button class="btn btn-outline-light me-2" onclick="showLogin()">Login</button>
+                    <button class="btn btn-primary" onclick="showRegister()">Register</button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="container">
+            <!-- Login Form -->
+            <div id="loginForm" class="row justify-content-center" style="display: none;">
+                <div class="col-md-6 col-lg-4">
+                    <div class="card">
+                        <div class="card-body p-4">
+                            <h3 class="text-center mb-4">Login</h3>
+                            <form id="loginFormElement">
+                                <div class="mb-3">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="loginEmail" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Password</label>
+                                    <input type="password" class="form-control" id="loginPassword" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">Login</button>
+                            </form>
+                            <div class="text-center mt-3">
+                                <a href="#" onclick="showRegister()">Don't have an account? Register</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Register Form -->
+            <div id="registerForm" class="row justify-content-center" style="display: none;">
+                <div class="col-md-6 col-lg-4">
+                    <div class="card">
+                        <div class="card-body p-4">
+                            <h3 class="text-center mb-4">Register</h3>
+                            <form id="registerFormElement">
+                                <div class="mb-3">
+                                    <label class="form-label">First Name</label>
+                                    <input type="text" class="form-control" id="regFirstName" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Surname</label>
+                                    <input type="text" class="form-control" id="regSurname" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="regEmail" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Password</label>
+                                    <input type="password" class="form-control" id="regPassword" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">Register</button>
+                            </form>
+                            <div class="text-center mt-3">
+                                <a href="#" onclick="showLogin()">Already have an account? Login</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard -->
+            <div id="dashboard" style="display: none;">
+                <div class="row">
+                    <div class="col-12">
+                        <ul class="nav nav-tabs" id="dashboardTabs">
+                            <li class="nav-item">
+                                <a class="nav-link active" onclick="showTab('subjects')">Subjects</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" onclick="showTab('tutorRegister')">Become a Tutor</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" onclick="showTab('myBookings')">My Bookings</a>
+                            </li>
+                            <li class="nav-item" id="adminTab" style="display: none;">
+                                <a class="nav-link" onclick="showTab('admin')">Admin Panel</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" onclick="showTab('profile')">Profile</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Subjects Tab -->
+                <div id="subjectsTab" class="tab-content mt-4">
+                    <div class="row" id="subjectsList">
+                        <!-- Subjects will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Tutor Registration Tab -->
+                <div id="tutorRegisterTab" class="tab-content mt-4" style="display: none;">
+                    <div class="row justify-content-center">
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h4>Become a Tutor</h4>
+                                    <form id="tutorRegisterForm">
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">First Name</label>
+                                                <input type="text" class="form-control" id="tutorFirstName" required>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Surname</label>
+                                                <input type="text" class="form-control" id="tutorSurname" required>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Email</label>
+                                            <input type="email" class="form-control" id="tutorEmail" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Subjects (comma separated)</label>
+                                            <input type="text" class="form-control" id="tutorSubjects" placeholder="e.g., Math, Physics, Chemistry" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Description</label>
+                                            <textarea class="form-control" id="tutorDescription" rows="4" placeholder="Tell us about your teaching experience and qualifications..." required></textarea>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">Submit Application</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- My Bookings Tab -->
+                <div id="myBookingsTab" class="tab-content mt-4" style="display: none;">
+                    <div class="row" id="bookingsList">
+                        <!-- Bookings will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Admin Panel Tab -->
+                <div id="adminTab" class="tab-content mt-4" style="display: none;">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5>Tutor Applications</h5>
+                                    <div id="tutorApplications">
+                                        <!-- Tutor applications will be loaded here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5>All Bookings</h5>
+                                    <div id="allBookings">
+                                        <!-- All bookings will be loaded here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Profile Tab -->
+                <div id="profileTab" class="tab-content mt-4" style="display: none;">
+                    <div class="row justify-content-center">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h4>Profile</h4>
+                                    <form id="profileForm">
+                                        <div class="mb-3">
+                                            <label class="form-label">First Name</label>
+                                            <input type="text" class="form-control" id="profileFirstName" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Surname</label>
+                                            <input type="text" class="form-control" id="profileSurname" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Email</label>
+                                            <input type="email" class="form-control" id="profileEmail" required>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">Update Profile</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Booking Modal -->
+    <div class="modal fade" id="bookingModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Book Session</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="bookingForm">
+                        <div class="mb-3">
+                            <label class="form-label">Subject</label>
+                            <input type="text" class="form-control" id="bookingSubject" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Tutor</label>
+                            <input type="text" class="form-control" id="bookingTutor" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Date</label>
+                            <input type="date" class="form-control" id="bookingDate" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Time Period</label>
+                            <input type="text" class="form-control" id="bookingTimePeriod" placeholder="e.g., 2:00 PM - 4:00 PM" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" id="bookingDescription" rows="3" placeholder="What would you like to learn?" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Book Session</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html> 

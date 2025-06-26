@@ -1,0 +1,389 @@
+require('dotenv').config();
+const express = require('express');
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const nodemailer = require('nodemailer');
+const cors = require('cors');
+const path = require('path');
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+app.use(express.static('public'));
+
+// MongoDB Connection
+mongoose.connect(process.env.MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+});
+
+// Models
+const User = require('./model/User');
+const Tutor = require('./model/Tutor');
+const Subject = require('./model/Subject');
+const Booking = require('./model/Booking');
+
+// Email configuration
+const transporter = nodemailer.createTransporter({
+  service: 'gmail',
+  auth: {
+    user: 'tutorsystemparnell@gmail.com', // Replace with your email
+    pass: 'lnqr bwcp rffy bxlf' // Replace with your app password
+  }
+});
+
+// JWT Secret
+const JWT_SECRET = 'your-super-secret-jwt-key';
+
+// Authentication middleware
+const authenticateToken = (req, res, next) => {
+  const token = req.headers['authorization']?.split(' ')[1];
+  
+  if (!token) {
+    return res.status(401).json({ message: 'Access token required' });
+  }
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) return res.status(403).json({ message: 'Invalid token' });
+    req.user = user;
+    next();
+  });
+};
+
+// Routes
+
+// User Registration
+app.post('/api/register', async (req, res) => {
+  try {
+    const { firstName, surname, email, password } = req.body;
+    
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: 'User already exists' });
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+    
+    // Create user
+    const user = new User({
+      firstName,
+      surname,
+      email,
+      password: hashedPassword
+    });
+    
+    await user.save();
+    
+    res.status(201).json({ message: 'User registered successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// User Login
+app.post('/api/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    // Find user
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
+    
+    // Check password
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (!validPassword) {
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
+    
+    // Create token
+    const token = jwt.sign(
+      { userId: user._id, email: user.email, isAdmin: user.isAdmin },
+      JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+    
+    res.json({
+      token,
+      user: {
+        id: user._id,
+        firstName: user.firstName,
+        surname: user.surname,
+        email: user.email,
+        isAdmin: user.isAdmin
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Get Subjects
+app.get('/api/subjects', async (req, res) => {
+  try {
+    const subjects = await Subject.find();
+    res.json(subjects);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Get Approved Tutors by Subject
+app.get('/api/tutors/:subject', async (req, res) => {
+  try {
+    const { subject } = req.params;
+    const tutors = await Tutor.find({
+      subjects: subject,
+      isApproved: true
+    }).select('-description');
+    
+    res.json(tutors);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Tutor Registration
+app.post('/api/tutor/register', async (req, res) => {
+  try {
+    const { firstName, surname, email, subjects, description } = req.body;
+    
+    // Check if tutor already exists
+    const existingTutor = await Tutor.findOne({ email });
+    if (existingTutor) {
+      return res.status(400).json({ message: 'Tutor already registered' });
+    }
+    
+    // Create tutor
+    const tutor = new Tutor({
+      firstName,
+      surname,
+      email,
+      subjects,
+      description,
+      isApproved: false
+    });
+    
+    await tutor.save();
+    
+    // Send email to manager
+    const mailOptions = {
+      from: 'tutorsystemparnell@gmail.com',
+      to: 'tutorsystemparnell@gmail.com', // Replace with manager email
+      subject: 'New Tutor Registration',
+      html: `
+        <h2>New Tutor Registration</h2>
+        <p><strong>Name:</strong> ${firstName} ${surname}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Subjects:</strong> ${subjects.join(', ')}</p>
+        <p><strong>Description:</strong> ${description}</p>
+        <p>Please review and approve this tutor registration.</p>
+      `
+    };
+    
+    await transporter.sendMail(mailOptions);
+    
+    res.status(201).json({ message: 'Tutor registration submitted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Create Booking
+app.post('/api/bookings', authenticateToken, async (req, res) => {
+  try {
+    const { tutorId, subject, timePeriod, description, date } = req.body;
+    
+    // Create booking
+    const booking = new Booking({
+      user: req.user.userId,
+      tutor: tutorId,
+      subject,
+      timePeriod,
+      description,
+      date: new Date(date)
+    });
+    
+    await booking.save();
+    
+    // Get tutor and user details for email
+    const tutor = await Tutor.findById(tutorId);
+    const user = await User.findById(req.user.userId);
+    
+    // Send email to tutor
+    const tutorMailOptions = {
+      from: 'tutorsystemparnell@gmail.com',
+      to: tutor.email,
+      subject: 'New Booking Request',
+      html: `
+        <h2>New Booking Request</h2>
+        <p><strong>Student:</strong> ${user.firstName} ${user.surname}</p>
+        <p><strong>Subject:</strong> ${subject}</p>
+        <p><strong>Time Period:</strong> ${timePeriod}</p>
+        <p><strong>Date:</strong> ${new Date(date).toLocaleDateString()}</p>
+        <p><strong>Description:</strong> ${description}</p>
+        <p>Please review this booking request.</p>
+      `
+    };
+    
+    await transporter.sendMail(tutorMailOptions);
+    
+    res.status(201).json({ message: 'Booking created successfully', booking });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Get User Bookings
+app.get('/api/bookings/user', authenticateToken, async (req, res) => {
+  try {
+    const bookings = await Booking.find({ user: req.user.userId })
+      .populate('tutor', 'firstName surname email')
+      .sort({ createdAt: -1 });
+    
+    res.json(bookings);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Get Tutor Bookings
+app.get('/api/bookings/tutor', authenticateToken, async (req, res) => {
+  try {
+    const tutor = await Tutor.findOne({ email: req.user.email });
+    if (!tutor) {
+      return res.status(404).json({ message: 'Tutor not found' });
+    }
+    
+    const bookings = await Booking.find({ tutor: tutor._id })
+      .populate('user', 'firstName surname email')
+      .sort({ createdAt: -1 });
+    
+    res.json(bookings);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Manager Routes (Admin only)
+app.get('/api/admin/tutors', authenticateToken, async (req, res) => {
+  try {
+    if (!req.user.isAdmin) {
+      return res.status(403).json({ message: 'Admin access required' });
+    }
+    
+    const tutors = await Tutor.find().sort({ createdAt: -1 });
+    res.json(tutors);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+app.put('/api/admin/tutors/:id/approve', authenticateToken, async (req, res) => {
+  try {
+    if (!req.user.isAdmin) {
+      return res.status(403).json({ message: 'Admin access required' });
+    }
+    
+    const tutor = await Tutor.findByIdAndUpdate(
+      req.params.id,
+      { isApproved: true },
+      { new: true }
+    );
+    
+    if (!tutor) {
+      return res.status(404).json({ message: 'Tutor not found' });
+    }
+    
+    // Send approval email to tutor
+    const mailOptions = {
+      from: 'tutorsystemparnell@gmail.com',
+      to: tutor.email,
+      subject: 'Tutor Registration Approved',
+      html: `
+        <h2>Congratulations!</h2>
+        <p>Your tutor registration has been approved.</p>
+        <p>You can now receive booking requests from students.</p>
+      `
+    };
+    
+    await transporter.sendMail(mailOptions);
+    
+    res.json({ message: 'Tutor approved successfully', tutor });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+app.get('/api/admin/bookings', authenticateToken, async (req, res) => {
+  try {
+    if (!req.user.isAdmin) {
+      return res.status(403).json({ message: 'Admin access required' });
+    }
+    
+    const bookings = await Booking.find()
+      .populate('user', 'firstName surname email')
+      .populate('tutor', 'firstName surname email')
+      .sort({ createdAt: -1 });
+    
+    res.json(bookings);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Update User Profile
+app.put('/api/profile', authenticateToken, async (req, res) => {
+  try {
+    const { firstName, surname, email } = req.body;
+    
+    const user = await User.findByIdAndUpdate(
+      req.user.userId,
+      { firstName, surname, email },
+      { new: true }
+    );
+    
+    res.json({ message: 'Profile updated successfully', user });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Serve frontend
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Initialize default manager account
+const initializeManager = async () => {
+  try {
+    const existingManager = await User.findOne({ email: 'eric_yang@example.com' });
+    if (!existingManager) {
+      const hashedPassword = await bcrypt.hash('GRE_is_the_best_house', 10);
+      const manager = new User({
+        firstName: 'Eric',
+        surname: 'Yang',
+        email: 'eric_yang@example.com',
+        password: hashedPassword,
+        isAdmin: true
+      });
+      await manager.save();
+      console.log('Default manager account created');
+    }
+  } catch (error) {
+    console.error('Error creating manager account:', error);
+  }
+};
+
+// Start server
+app.listen(PORT, async () => {
+  console.log(`Server running on port ${PORT}`);
+  await initializeManager();
+});
