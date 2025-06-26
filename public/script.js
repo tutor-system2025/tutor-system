@@ -5,7 +5,7 @@ let selectedTutor = null;
 let selectedSubject = null;
 
 // API Base URL
-const API_BASE = 'https://tutorial-signup.herokuapp.com/api';
+const API_BASE = 'https://tutorial-signup-d60837d8fe04.herokuapp.com/api';
 
 // Utility functions
 function showAlert(message, type = 'success') {
