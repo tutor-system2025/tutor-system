@@ -28,7 +28,7 @@ const Subject = require('./model/Subject');
 const Booking = require('./model/Booking');
 
 // Email configuration
-const transporter = nodemailer.createTransporter({
+const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: 'tutorsystemparnell@gmail.com', // Replace with your email
