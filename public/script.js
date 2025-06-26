@@ -607,4 +607,9 @@ document.addEventListener('submit', function(e) {
         };
         updateProfile(formData);
     }
-}); 
+});
+
+window.showLogin = showLogin;
+window.showRegister = showRegister;
+window.showDashboard = showDashboard;
+window.showTab = showTab; 
