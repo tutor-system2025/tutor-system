@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public'));
+
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI, {
@@ -356,7 +356,10 @@ app.put('/api/profile', authenticateToken, async (req, res) => {
   }
 });
 
-// Serve frontend
+// Serve static files
+app.use(express.static('public'));
+
+// Catch-all: serve frontend for any other route
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
