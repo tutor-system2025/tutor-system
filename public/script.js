@@ -298,7 +298,7 @@ function managerPanelView() {
                                         <input type="checkbox" 
                                                id="subject-${t._id}-${s._id}" 
                                                value="${s._id}"
-                                               ${Array.isArray(t.subjects) && t.subjects.includes(s._id) ? 'checked' : ''}>
+                                               ${Array.isArray(t.subjects) && t.subjects.includes(s.name) ? 'checked' : ''}>
                                         ${s.name}
                                     </label>
                                 `).join('')}
