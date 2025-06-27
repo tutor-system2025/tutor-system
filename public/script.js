@@ -20,8 +20,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Utility functions
     function showAlert(message, type = 'success') {
+        console.log('showAlert called with:', message, type);
+        
         // Wait for DOM to be ready if it's not already
         if (document.readyState === 'loading') {
+            console.log('DOM not ready, deferring showAlert');
             document.addEventListener('DOMContentLoaded', () => showAlert(message, type));
             return;
         }
@@ -39,19 +42,27 @@ document.addEventListener("DOMContentLoaded", () => {
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         `;
         
-        // Try to use the dedicated alert container first
-        const alertContainer = document.getElementById('alert-container');
-        if (alertContainer) {
-            alertContainer.appendChild(alertDiv);
-        } else {
-            // Fallback to body
+        console.log('Created alert div:', alertDiv);
+        
+        // Always append to body as the safest option
+        try {
             document.body.appendChild(alertDiv);
+            console.log('Alert appended to body successfully');
+        } catch (error) {
+            console.error('Failed to append alert:', error);
+            // If even body append fails, try to log the message
+            console.log('Alert message:', message);
         }
         
         // Auto-remove after 5 seconds
         setTimeout(() => {
-            if (alertDiv.parentNode) {
-                alertDiv.remove();
+            try {
+                if (alertDiv && alertDiv.parentNode) {
+                    alertDiv.remove();
+                    console.log('Alert removed successfully');
+                }
+            } catch (error) {
+                console.error('Failed to remove alert:', error);
             }
         }, 5000);
     }
