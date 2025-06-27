@@ -14,10 +14,8 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(helmet.contentSecurityPolicy({
-  directives: {
-    scriptSrc: ["'self'", "https://cdn.jsdelivr.net"]
-  }
+app.use(helmet({
+  contentSecurityPolicy: false
 }));
 app.disable('x-powered-by');
 app.use(express.static('public', {
