@@ -1,10 +1,5 @@
-// Debug: Check if script is loading
-console.log('Script.js is loading...');
-
 // Wait for DOM to be fully loaded before running any setup
 document.addEventListener("DOMContentLoaded", () => {
-    console.log('DOM is ready!');
-    
     // Global variables
     let currentUser = null;
     let currentToken = null;
@@ -20,15 +15,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Utility functions
     function displayAlert(message, type = 'success') {
-        console.log('displayAlert called with:', message, type);
-        
-        // Wait for DOM to be ready if it's not already
-        if (document.readyState === 'loading') {
-            console.log('DOM not ready, deferring displayAlert');
-            document.addEventListener('DOMContentLoaded', () => displayAlert(message, type));
-            return;
-        }
-        
         const alertDiv = document.createElement('div');
         alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
         alertDiv.style.position = 'fixed';
@@ -42,100 +28,24 @@ document.addEventListener("DOMContentLoaded", () => {
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         `;
         
-        console.log('Created alert div:', alertDiv);
-        
-        // Enhanced safety check with friendly warning
         const alertContainer = document.getElementById('alert-container');
-        console.log('🔍 Looking for alert-container...');
-        console.log('🔍 alert-container found:', alertContainer);
-        console.log('🔍 document.readyState:', document.readyState);
-        console.log('🔍 document.body:', document.body);
-        
         if (alertContainer) {
-            try {
-                // Use insertBefore to add at the top of the container
-                alertContainer.insertBefore(alertDiv, alertContainer.firstChild);
-                console.log('✅ Alert successfully added to alert-container');
-            } catch (error) {
-                console.error('❌ Failed to append to alert-container:', error);
-                // Fall back to body
-                try {
-                    document.body.appendChild(alertDiv);
-                    console.log('✅ Alert appended to body as fallback');
-                } catch (fallbackError) {
-                    console.error('❌ Failed to append alert to body:', fallbackError);
-                    console.log('📝 Alert message (could not display):', message);
-                }
-            }
+            alertContainer.insertBefore(alertDiv, alertContainer.firstChild);
         } else {
-            console.warn("⚠️ alert-container not found in DOM. Adding alert to body instead.");
-            console.warn("⚠️ This might be due to DOM not being ready or element not existing.");
-            // No alert-container found, use body
-            try {
-                document.body.appendChild(alertDiv);
-                console.log('✅ Alert appended to body (no alert-container found)');
-            } catch (error) {
-                console.error('❌ Failed to append alert:', error);
-                console.log('📝 Alert message (could not display):', message);
-            }
+            document.body.appendChild(alertDiv);
         }
         
         // Auto-remove after 5 seconds
         setTimeout(() => {
-            try {
-                if (alertDiv && alertDiv.parentNode) {
-                    alertDiv.remove();
-                    console.log('✅ Alert removed successfully');
-                }
-            } catch (error) {
-                console.error('❌ Failed to remove alert:', error);
+            if (alertDiv && alertDiv.parentNode) {
+                alertDiv.remove();
             }
         }, 5000);
     }
     
     // Keep old function name for backward compatibility but redirect to new function
     function showAlert(message, type = 'success') {
-        console.log('showAlert called, redirecting to displayAlert');
-        console.log('showAlert message:', message, 'type:', type);
-        
-        // Ensure we're using the new function
-        if (typeof displayAlert === 'function') {
-            displayAlert(message, type);
-        } else {
-            console.error('displayAlert function not found, using fallback');
-            // Fallback implementation
-            const alertDiv = document.createElement('div');
-            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
-            alertDiv.style.position = 'fixed';
-            alertDiv.style.top = '80px';
-            alertDiv.style.left = '50%';
-            alertDiv.style.transform = 'translateX(-50%)';
-            alertDiv.style.zIndex = '9999';
-            alertDiv.style.minWidth = '300px';
-            alertDiv.innerHTML = `
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            `;
-            
-            try {
-                document.body.appendChild(alertDiv);
-                console.log('✅ Fallback alert appended to body');
-            } catch (error) {
-                console.error('❌ Failed to append fallback alert:', error);
-                console.log('📝 Alert message (could not display):', message);
-            }
-            
-            // Auto-remove after 5 seconds
-            setTimeout(() => {
-                try {
-                    if (alertDiv && alertDiv.parentNode) {
-                        alertDiv.remove();
-                    }
-                } catch (error) {
-                    console.error('❌ Failed to remove fallback alert:', error);
-                }
-            }, 5000);
-        }
+        displayAlert(message, type);
     }
 
     function setToken(token) {
@@ -595,39 +505,28 @@ document.addEventListener("DOMContentLoaded", () => {
     // Event listeners
     // Navigation event listeners
     document.addEventListener('click', function(e) {
-        console.log('Click event triggered on:', e.target);
-        console.log('Data action:', e.target.getAttribute('data-action'));
-        console.log('Element tag name:', e.target.tagName);
-        console.log('Element class list:', e.target.classList);
-        
         const action = e.target.getAttribute('data-action');
         if (!action) {
-            console.log('No data-action found, returning');
             return;
         }
         
         e.preventDefault();
-        console.log('Processing action:', action);
         
         switch(action) {
             case 'showLogin':
-                console.log('Showing login...');
                 showLogin();
                 break;
             case 'showRegister':
-                console.log('Showing register...');
                 showRegister();
                 break;
             case 'showTab':
                 const tabName = e.target.getAttribute('data-tab');
-                console.log('Showing tab:', tabName);
                 if (tabName) {
                     showTab(tabName, e);
                 }
                 break;
             case 'selectSubject':
                 const subjectName = e.target.getAttribute('data-subject');
-                console.log('Selecting subject:', subjectName);
                 if (subjectName) {
                     selectSubject(subjectName);
                 }
@@ -635,25 +534,21 @@ document.addEventListener("DOMContentLoaded", () => {
             case 'selectTutor':
                 const tutorId = e.target.getAttribute('data-tutor-id');
                 const tutorName = e.target.getAttribute('data-tutor-name');
-                console.log('Selecting tutor:', tutorId, tutorName);
                 if (tutorId && tutorName) {
                     selectTutor(tutorId, tutorName);
                 }
                 break;
             case 'approveTutor':
                 const tutorIdToApprove = e.target.getAttribute('data-tutor-id');
-                console.log('Approving tutor:', tutorIdToApprove);
                 if (tutorIdToApprove) {
                     approveTutor(tutorIdToApprove);
                 }
                 break;
             case 'logout':
-                console.log('Logging out...');
                 logout();
                 break;
             case 'loadSubjects':
                 const page = e.target.getAttribute('data-page');
-                console.log('Loading subjects page:', page);
                 if (page) {
                     loadSubjects(parseInt(page));
                 } else {
@@ -662,7 +557,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 break;
             case 'loadUserBookings':
                 const bookingsPage = e.target.getAttribute('data-page');
-                console.log('Loading bookings page:', bookingsPage);
                 if (bookingsPage) {
                     loadUserBookings(parseInt(bookingsPage));
                 } else {
@@ -670,7 +564,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
                 break;
             default:
-                console.log('Unknown action:', action);
                 break;
         }
     });
@@ -748,8 +641,4 @@ document.addEventListener("DOMContentLoaded", () => {
             showLogin();
         }
     }
-
-    // Debug: Test if DOM is accessible
-    console.log('Login form element:', document.getElementById('loginForm'));
-    console.log('Register form element:', document.getElementById('registerForm'));
 }); 
