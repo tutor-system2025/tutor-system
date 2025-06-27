@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com; img-src 'self' data: https:; connect-src 'self' https://tutorial-signup-d60837d8fe04.herokuapp.com;">
     <title>Tutor System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -61,8 +62,8 @@
                     Parnell Tutor System
                 </a>
                 <div class="navbar-nav flex-row" id="navItems">
-                    <button class="btn btn-outline-light me-2" onclick="showLogin()">Login</button>
-                    <button class="btn btn-primary" onclick="showRegister()">Register</button>
+                    <button class="btn btn-outline-light me-2" data-action="showLogin">Login</button>
+                    <button class="btn btn-primary" data-action="showRegister">Register</button>
                 </div>
             </div>
         </nav>
@@ -86,7 +87,7 @@
                             <button type="submit" class="btn btn-primary w-100">Login</button>
                         </form>
                         <div class="text-center mt-3">
-                            <a href="#" onclick="showRegister()">Don't have an account? Register</a>
+                            <a href="#" data-action="showRegister">Don't have an account? Register</a>
                         </div>
                     </div>
                 </div>
@@ -119,7 +120,7 @@
                             <button type="submit" class="btn btn-primary w-100">Register</button>
                         </form>
                         <div class="text-center mt-3">
-                            <a href="#" onclick="showLogin()">Already have an account? Login</a>
+                            <a href="#" data-action="showLogin">Already have an account? Login</a>
                         </div>
                     </div>
                 </div>
@@ -132,19 +133,19 @@
                 <div class="col-12">
                     <ul class="nav nav-tabs w-100" id="dashboardTabs" style="position: fixed; top: 56px; left: 0; right: 0; z-index: 1040; background: #f8f9fa; border-bottom: 1px solid #dee2e6; padding-left: 16px;">
                         <li class="nav-item">
-                            <a class="nav-link active" onclick="showTab('subjects')">Subjects</a>
+                            <a class="nav-link active" data-action="showTab" data-tab="subjects">Subjects</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" onclick="showTab('tutorRegister')">Become a Tutor</a>
+                            <a class="nav-link" data-action="showTab" data-tab="tutorRegister">Become a Tutor</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" onclick="showTab('myBookings')">My Bookings</a>
+                            <a class="nav-link" data-action="showTab" data-tab="myBookings">My Bookings</a>
                         </li>
                         <li class="nav-item" id="adminTab" style="display: none;">
-                            <a class="nav-link" onclick="showTab('admin')">Admin Panel</a>
+                            <a class="nav-link" data-action="showTab" data-tab="admin">Admin Panel</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" onclick="showTab('profile')">Profile</a>
+                            <a class="nav-link" data-action="showTab" data-tab="profile">Profile</a>
                         </li>
                     </ul>
                 </div>

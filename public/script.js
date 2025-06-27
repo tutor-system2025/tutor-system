@@ -19,8 +19,11 @@ function showAlert(message, type = 'success') {
         ${message}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     `;
-    document.querySelector('.container').insertBefore(alertDiv, document.querySelector('.container').firstChild);
-    setTimeout(() => alertDiv.remove(), 5000);
+    const container = document.querySelector('.container-fluid');
+    if (container) {
+        container.insertBefore(alertDiv, container.firstChild);
+        setTimeout(() => alertDiv.remove(), 5000);
+    }
 }
 
 function setToken(token) {
@@ -61,7 +64,7 @@ function showDashboard() {
     loadDashboard();
 }
 
-function showTab(tabName) {
+function showTab(tabName, event) {
     // Hide all tabs
     document.querySelectorAll('.tab-content').forEach(tab => {
         tab.style.display = 'none';
@@ -76,7 +79,9 @@ function showTab(tabName) {
     document.getElementById(tabName + 'Tab').style.display = 'block';
     
     // Add active class to selected nav link
-    event.target.classList.add('active');
+    if (event && event.target) {
+        event.target.classList.add('active');
+    }
     
     // Load tab content
     switch(tabName) {
@@ -152,7 +157,7 @@ async function loadDashboard() {
     const navItems = document.getElementById('navItems');
     navItems.innerHTML = `
         <span class="navbar-text me-3">Welcome, ${currentUser.firstName}!</span>
-        <button class="btn btn-outline-light" onclick="logout()">Logout</button>
+        <button class="btn btn-outline-light" data-action="logout">Logout</button>
     `;
     
     // Show admin tab if user is admin
@@ -193,7 +198,7 @@ async function loadSubjects(page = 1) {
                     <div class="card-body">
                         <h5 class="card-title">${subject.name}</h5>
                         <p class="card-text">Get help with ${subject.name.toLowerCase()} from qualified tutors.</p>
-                        <button class="btn btn-primary" onclick="selectSubject('${subject.name}')">
+                        <button class="btn btn-primary" data-action="selectSubject" data-subject="${subject.name}">
                             Find Tutors
                         </button>
                     </div>
@@ -203,22 +208,24 @@ async function loadSubjects(page = 1) {
         
         // Render pagination controls
         const pagination = document.getElementById('pagination');
-        pagination.innerHTML = `
-            <nav>
-                <ul class="pagination">
-                    <li class="page-item">
-                        <a class="page-link" href="#" aria-label="Previous" onclick="loadSubjects(${Math.max(1, page - 1)}); return false;">
-                            <span aria-hidden="true">&laquo;</span>
-                        </a>
-                    </li>
-                    <li class="page-item">
-                        <a class="page-link" href="#" aria-label="Next" onclick="loadSubjects(${Math.min(data.total, page + 1)}); return false;">
-                            <span aria-hidden="true">&raquo;</span>
-                        </a>
-                    </li>
-                </ul>
-            </nav>
-        `;
+        if (pagination) {
+            pagination.innerHTML = `
+                <nav>
+                    <ul class="pagination">
+                        <li class="page-item">
+                            <a class="page-link" href="#" aria-label="Previous" data-action="loadSubjects" data-page="${Math.max(1, page - 1)}">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="#" aria-label="Next" data-action="loadSubjects" data-page="${Math.min(data.total, page + 1)}">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            `;
+        }
     } catch (error) {
         showAlert(error.message, 'danger');
     }
@@ -240,7 +247,7 @@ async function selectSubject(subjectName) {
                     <div class="card-body">
                         <h6 class="card-title">${tutor.firstName} ${tutor.surname}</h6>
                         <p class="card-text">Email: ${tutor.email}</p>
-                        <button class="btn btn-primary btn-sm" onclick="selectTutor('${tutor._id}', '${tutor.firstName} ${tutor.surname}')">
+                        <button class="btn btn-primary btn-sm" data-action="selectTutor" data-tutor-id="${tutor._id}" data-tutor-name="${tutor.firstName} ${tutor.surname}">
                             Book Session
                         </button>
                     </div>
@@ -250,12 +257,9 @@ async function selectSubject(subjectName) {
         
         document.getElementById('subjectsList').innerHTML = `
             <div class="col-12 mb-3">
-                <button class="btn btn-outline-primary" onclick="loadSubjects()">
+                <button class="btn btn-outline-primary" data-action="loadSubjects">
                     <i class="fas fa-arrow-left"></i> Back to Subjects
                 </button>
-            </div>
-            <div class="col-12">
-                <h4>Tutors for ${subjectName}</h4>
             </div>
             ${tutorsList}
         `;
@@ -323,22 +327,24 @@ async function loadUserBookings(page = 1) {
         
         // Render pagination controls
         const pagination = document.getElementById('bookingsPagination');
-        pagination.innerHTML = `
-            <nav>
-                <ul class="pagination">
-                    <li class="page-item">
-                        <a class="page-link" href="#" aria-label="Previous" onclick="loadUserBookings(${Math.max(1, page - 1)}); return false;">
-                            <span aria-hidden="true">&laquo;</span>
-                        </a>
-                    </li>
-                    <li class="page-item">
-                        <a class="page-link" href="#" aria-label="Next" onclick="loadUserBookings(${Math.min(data.total, page + 1)}); return false;">
-                            <span aria-hidden="true">&raquo;</span>
-                        </a>
-                    </li>
-                </ul>
-            </nav>
-        `;
+        if (pagination) {
+            pagination.innerHTML = `
+                <nav>
+                    <ul class="pagination">
+                        <li class="page-item">
+                            <a class="page-link" href="#" aria-label="Previous" data-action="loadUserBookings" data-page="${Math.max(1, page - 1)}">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="#" aria-label="Next" data-action="loadUserBookings" data-page="${Math.min(data.total, page + 1)}">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            `;
+        }
     } catch (error) {
         showAlert(error.message, 'danger');
     }
@@ -395,7 +401,7 @@ async function loadAdminData() {
                         <p class="mb-1"><small>${tutor.email}</small></p>
                         <p class="mb-1"><small><strong>Subjects:</strong> ${tutor.subjects.join(', ')}</small></p>
                         <p class="mb-2"><small>${tutor.description}</small></p>
-                        <button class="btn btn-success btn-sm" onclick="approveTutor('${tutor._id}')">
+                        <button class="btn btn-success btn-sm" data-action="approveTutor" data-tutor-id="${tutor._id}">
                             Approve
                         </button>
                     </div>
@@ -468,26 +474,76 @@ function logout() {
     // Reset navbar to Login and Register
     const navItems = document.getElementById('navItems');
     navItems.innerHTML = `
-        <button class="btn btn-outline-light me-2" onclick="showLogin()">Login</button>
-        <button class="btn btn-primary" onclick="showRegister()">Register</button>
+        <button class="btn btn-outline-light me-2" data-action="showLogin">Login</button>
+        <button class="btn btn-primary" data-action="showRegister">Register</button>
     `;
     showAlert('Logged out successfully!');
 }
 
 // Event listeners
 document.addEventListener('DOMContentLoaded', function() {
-    // Check if user is already logged in
-    const token = getToken();
-    if (token) {
-        // Try to load dashboard (will fail if token is invalid)
-        loadDashboard().catch(() => {
-            clearAuth();
-            showLogin();
-        });
-    } else {
-        showLogin();
-    }
+    // Navigation event listeners
+    document.addEventListener('click', function(e) {
+        const action = e.target.getAttribute('data-action');
+        if (!action) return;
+        
+        e.preventDefault();
+        
+        switch(action) {
+            case 'showLogin':
+                showLogin();
+                break;
+            case 'showRegister':
+                showRegister();
+                break;
+            case 'showTab':
+                const tabName = e.target.getAttribute('data-tab');
+                if (tabName) {
+                    showTab(tabName, e);
+                }
+                break;
+            case 'selectSubject':
+                const subjectName = e.target.getAttribute('data-subject');
+                if (subjectName) {
+                    selectSubject(subjectName);
+                }
+                break;
+            case 'selectTutor':
+                const tutorId = e.target.getAttribute('data-tutor-id');
+                const tutorName = e.target.getAttribute('data-tutor-name');
+                if (tutorId && tutorName) {
+                    selectTutor(tutorId, tutorName);
+                }
+                break;
+            case 'approveTutor':
+                const tutorIdToApprove = e.target.getAttribute('data-tutor-id');
+                if (tutorIdToApprove) {
+                    approveTutor(tutorIdToApprove);
+                }
+                break;
+            case 'logout':
+                logout();
+                break;
+            case 'loadSubjects':
+                const page = e.target.getAttribute('data-page');
+                if (page) {
+                    loadSubjects(parseInt(page));
+                } else {
+                    loadSubjects();
+                }
+                break;
+            case 'loadUserBookings':
+                const bookingsPage = e.target.getAttribute('data-page');
+                if (bookingsPage) {
+                    loadUserBookings(parseInt(bookingsPage));
+                } else {
+                    loadUserBookings();
+                }
+                break;
+        }
+    });
     
+    // Form event listeners
     document.getElementById('loginFormElement').addEventListener('submit', function(e) {
         e.preventDefault();
         const email = document.getElementById('loginEmail').value;
@@ -516,6 +572,18 @@ document.addEventListener('DOMContentLoaded', function() {
         tutorRegister(formData);
     });
     
+    document.getElementById('bookingForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = {
+            subject: document.getElementById('bookingSubject').value,
+            tutor: document.getElementById('bookingTutor').value,
+            date: document.getElementById('bookingDate').value,
+            timePeriod: document.getElementById('bookingTimePeriod').value,
+            description: document.getElementById('bookingDescription').value
+        };
+        createBooking(formData);
+    });
+    
     document.getElementById('profileForm').addEventListener('submit', function(e) {
         e.preventDefault();
         const formData = {
@@ -526,15 +594,14 @@ document.addEventListener('DOMContentLoaded', function() {
         updateProfile(formData);
     });
     
-    document.getElementById('bookingForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const formData = {
-            date: document.getElementById('bookingDate').value,
-            timePeriod: document.getElementById('bookingTimePeriod').value,
-            description: document.getElementById('bookingDescription').value
-        };
-        createBooking(formData);
-    });
+    // Check if user is already logged in
+    const token = getToken();
+    if (token) {
+        // Try to validate token and show dashboard
+        validateTokenAndShowDashboard();
+    } else {
+        showLogin();
+    }
 });
 
 function attachTutorRegisterListener() {
@@ -607,4 +674,18 @@ document.addEventListener('submit', function(e) {
 window.showLogin = showLogin;
 window.showRegister = showRegister;
 window.showDashboard = showDashboard;
-window.showTab = showTab; 
+window.showTab = showTab;
+
+// Add missing function
+async function validateTokenAndShowDashboard() {
+    try {
+        // Try to get user info to validate token
+        const userData = await apiCall('/profile');
+        currentUser = userData;
+        showDashboard();
+    } catch (error) {
+        // Token is invalid, clear auth and show login
+        clearAuth();
+        showLogin();
+    }
+} 
