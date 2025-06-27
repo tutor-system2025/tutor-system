@@ -1,3 +1,222 @@
+// SPA State
+let state = {
+    user: null, // { email, username, isManager }
+    subjects: [],
+    tutors: [],
+    bookings: [],
+    tutorRequests: [],
+    managerView: false,
+    currentView: 'login',
+    selectedSubject: null,
+    selectedTutor: null,
+    myBookings: [],
+    profile: null,
+};
+
+const app = document.getElementById('app');
+
+function setView(view) {
+    state.currentView = view;
+    render();
+}
+
+function showError(msg) {
+    return `<div class="error">${msg}</div>`;
+}
+function showSuccess(msg) {
+    return `<div class="success">${msg}</div>`;
+}
+
+function navBar() {
+    if (!state.user) return '';
+    return `<nav>
+        <button class="link" onclick="setView('book')">Book Session</button>
+        <button class="link" onclick="setView('becomeTutor')">Become Tutor</button>
+        <button class="link" onclick="setView('myBookings')">My Bookings</button>
+        <button class="link" onclick="setView('profile')">Profile</button>
+        ${state.user.isManager ? '<button class="link" onclick="setView(\'manager\')">Manager Panel</button>' : ''}
+        <button class="link" onclick="logout()">Logout</button>
+    </nav>`;
+}
+
+function render() {
+    let html = '';
+    if (!state.user) {
+        html = state.currentView === 'register' ? registerView() : loginView();
+    } else {
+        switch (state.currentView) {
+            case 'book': html = bookView(); break;
+            case 'chooseTutor': html = chooseTutorView(); break;
+            case 'bookingForm': html = bookingFormView(); break;
+            case 'becomeTutor': html = becomeTutorView(); break;
+            case 'myBookings': html = myBookingsView(); break;
+            case 'profile': html = profileView(); break;
+            case 'manager': html = managerPanelView(); break;
+            default: html = bookView(); break;
+        }
+        html = navBar() + html;
+    }
+    app.innerHTML = html;
+}
+
+// Login/Register
+function loginView() {
+    return `<h1>Tutor Booking System</h1>
+        <form onsubmit="event.preventDefault(); login()">
+            <div class="input-group">
+                <label>Email</label>
+                <input type="email" id="login-email" required />
+            </div>
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="login-password" required />
+            </div>
+            <button class="btn" type="submit">Login</button>
+        </form>
+        <div style="text-align:center; margin-top:12px;">
+            <button class="link" onclick="setView('register')">Don't have an account? Register</button>
+        </div>`;
+}
+
+function registerView() {
+    return `<h1>Register</h1>
+        <form onsubmit="event.preventDefault(); register()">
+            <div class="input-group">
+                <label>Email</label>
+                <input type="email" id="register-email" required />
+            </div>
+            <div class="input-group">
+                <label>Username</label>
+                <input type="text" id="register-username" required />
+            </div>
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="register-password" required />
+            </div>
+            <button class="btn" type="submit">Register</button>
+        </form>
+        <div style="text-align:center; margin-top:12px;">
+            <button class="link" onclick="setView('login')">Already have an account? Login</button>
+        </div>`;
+}
+
+// Book Session
+function bookView() {
+    let subjectList = state.subjects.map(s => `<li><button class="link" onclick="selectSubject('${s._id}')">${s.name}</button></li>`).join('');
+    return `<h2>Book a Session</h2>
+        <ul class="list">${subjectList}</ul>`;
+}
+
+function chooseTutorView() {
+    let tutors = state.tutors.filter(t => t.subjects.includes(state.selectedSubject));
+    let tutorList = tutors.map(t => `<li><button class="link" onclick="selectTutor('${t._id}')">${t.name}</button> <span>(${t.description})</span></li>`).join('');
+    return `<h2>Choose a Tutor</h2>
+        <ul class="list">${tutorList}</ul>`;
+}
+
+function bookingFormView() {
+    return `<h2>Book Session with ${state.selectedTutorObj.name}</h2>
+        <form onsubmit="event.preventDefault(); submitBooking()">
+            <div class="input-group">
+                <label>Your Name</label>
+                <input type="text" id="booking-name" required />
+            </div>
+            <div class="input-group">
+                <label>Your Email</label>
+                <input type="email" id="booking-email" value="${state.user.email}" required />
+            </div>
+            <div class="input-group">
+                <label>Time</label>
+                <input type="datetime-local" id="booking-time" required />
+            </div>
+            <div class="input-group">
+                <label>What do you need help with?</label>
+                <textarea id="booking-desc" required></textarea>
+            </div>
+            <button class="btn" type="submit">Book</button>
+        </form>`;
+}
+
+// Become Tutor
+function becomeTutorView() {
+    return `<h2>Become a Tutor</h2>
+        <form onsubmit="event.preventDefault(); submitTutorRequest()">
+            <div class="input-group">
+                <label>Name</label>
+                <input type="text" id="tutor-name" required />
+            </div>
+            <div class="input-group">
+                <label>Gmail</label>
+                <input type="email" id="tutor-gmail" required />
+            </div>
+            <div class="input-group">
+                <label>Subjects to Teach</label>
+                <input type="text" id="tutor-subjects" placeholder="e.g. Math, Physics" required />
+            </div>
+            <div class="input-group">
+                <label>Description (time, level, etc.)</label>
+                <textarea id="tutor-desc" required></textarea>
+            </div>
+            <button class="btn" type="submit">Submit</button>
+        </form>`;
+}
+
+// My Bookings
+function myBookingsView() {
+    let list = state.myBookings.map(b => `<li>${b.subject} with ${b.tutor} at ${b.time} - ${b.status}</li>`).join('');
+    return `<h2>My Bookings</h2>
+        <ul class="list">${list}</ul>`;
+}
+
+// Profile
+function profileView() {
+    return `<h2>Profile</h2>
+        <div class="profile-info">
+            <div><strong>Email:</strong> ${state.user.email}</div>
+            <div><strong>Username:</strong> ${state.user.username}</div>
+        </div>`;
+}
+
+// Manager Panel
+function managerPanelView() {
+    return `<h2>Manager Panel</h2>
+        <div class="panel-section">
+            <h3>All Bookings</h3>
+            <ul class="list">${state.bookings.map(b => `<li>${b.user} booked ${b.subject} with ${b.tutor} at ${b.time}</li>`).join('')}</ul>
+        </div>
+        <div class="panel-section">
+            <h3>Subjects</h3>
+            <ul class="list">${state.subjects.map(s => `<li>${s.name}</li>`).join('')}</ul>
+            <form onsubmit="event.preventDefault(); addSubject()">
+                <div class="form-row">
+                    <div class="input-group">
+                        <input type="text" id="new-subject" placeholder="New subject" required />
+                    </div>
+                    <button class="btn btn-small" type="submit">Add Subject</button>
+                </div>
+            </form>
+        </div>
+        <div class="panel-section">
+            <h3>Tutor Registration Requests</h3>
+            <ul class="list">${state.tutorRequests.map(r => `<li class="tutor-item">
+                <div class="tutor-info">${r.name} (${r.gmail}) - ${r.subjects}</div>
+                <div class="tutor-actions">
+                    <button class="btn btn-small" onclick="approveTutor('${r._id}')">Approve</button>
+                </div>
+            </li>`).join('')}</ul>
+        </div>
+        <div class="panel-section">
+            <h3>Assign Tutors to Subjects</h3>
+            <ul class="list">${state.tutors.map(t => `<li class="tutor-item">
+                <div class="tutor-info">${t.name}</div>
+                <div class="tutor-actions">
+                    <select id="assign-${t._id}">${state.subjects.map(s => `<option value="${s._id}" ${t.subjects.includes(s._id) ? 'selected' : ''}>${s.name}</option>`)}</select>
+                    <button class="btn btn-small" onclick="assignTutor('${t._id}')">Assign</button>
+                </div>
+            </li>`).join('')}</ul>
+        </div>`;
+}
+
 // --- API Helpers ---
 const API = {
     async login(email, password) {
@@ -277,4 +496,5 @@ async function assignTutor(tutorId) {
     }
 }
 
-// ... existing code ... 
+// Initial render
+render(); 
