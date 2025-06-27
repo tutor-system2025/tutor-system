@@ -96,7 +96,46 @@ document.addEventListener("DOMContentLoaded", () => {
     // Keep old function name for backward compatibility but redirect to new function
     function showAlert(message, type = 'success') {
         console.log('showAlert called, redirecting to displayAlert');
-        displayAlert(message, type);
+        console.log('showAlert message:', message, 'type:', type);
+        
+        // Ensure we're using the new function
+        if (typeof displayAlert === 'function') {
+            displayAlert(message, type);
+        } else {
+            console.error('displayAlert function not found, using fallback');
+            // Fallback implementation
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.style.position = 'fixed';
+            alertDiv.style.top = '80px';
+            alertDiv.style.left = '50%';
+            alertDiv.style.transform = 'translateX(-50%)';
+            alertDiv.style.zIndex = '9999';
+            alertDiv.style.minWidth = '300px';
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            try {
+                document.body.appendChild(alertDiv);
+                console.log('✅ Fallback alert appended to body');
+            } catch (error) {
+                console.error('❌ Failed to append fallback alert:', error);
+                console.log('📝 Alert message (could not display):', message);
+            }
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                try {
+                    if (alertDiv && alertDiv.parentNode) {
+                        alertDiv.remove();
+                    }
+                } catch (error) {
+                    console.error('❌ Failed to remove fallback alert:', error);
+                }
+            }, 5000);
+        }
     }
 
     function setToken(token) {
