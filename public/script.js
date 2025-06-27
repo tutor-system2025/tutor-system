@@ -13,6 +13,12 @@ const API_BASE = 'https://tutorial-signup-d60837d8fe04.herokuapp.com/api';
 
 // Utility functions
 function showAlert(message, type = 'success') {
+    // Wait for DOM to be ready if it's not already
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => showAlert(message, type));
+        return;
+    }
+    
     const alertDiv = document.createElement('div');
     alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
     alertDiv.style.position = 'fixed';
@@ -26,31 +32,15 @@ function showAlert(message, type = 'success') {
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     `;
     
-    // Try to find a suitable container
-    let container = document.querySelector('.container-fluid');
-    if (!container) {
-        container = document.querySelector('.container');
-    }
-    if (!container) {
-        container = document.body;
-    }
+    // Always append to body as fallback
+    document.body.appendChild(alertDiv);
     
-    if (container) {
-        container.insertBefore(alertDiv, container.firstChild);
-        setTimeout(() => {
-            if (alertDiv.parentNode) {
-                alertDiv.remove();
-            }
-        }, 5000);
-    } else {
-        // Fallback: append to body
-        document.body.appendChild(alertDiv);
-        setTimeout(() => {
-            if (alertDiv.parentNode) {
-                alertDiv.remove();
-            }
-        }, 5000);
-    }
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
 }
 
 function setToken(token) {
