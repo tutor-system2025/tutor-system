@@ -19,13 +19,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const API_BASE = 'https://tutorial-signup-d60837d8fe04.herokuapp.com/api';
 
     // Utility functions
-    function showAlert(message, type = 'success') {
-        console.log('showAlert called with:', message, type);
+    function displayAlert(message, type = 'success') {
+        console.log('displayAlert called with:', message, type);
         
         // Wait for DOM to be ready if it's not already
         if (document.readyState === 'loading') {
-            console.log('DOM not ready, deferring showAlert');
-            document.addEventListener('DOMContentLoaded', () => showAlert(message, type));
+            console.log('DOM not ready, deferring displayAlert');
+            document.addEventListener('DOMContentLoaded', () => displayAlert(message, type));
             return;
         }
         
@@ -65,6 +65,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 console.error('Failed to remove alert:', error);
             }
         }, 5000);
+    }
+    
+    // Keep old function name for backward compatibility but redirect to new function
+    function showAlert(message, type = 'success') {
+        console.log('showAlert called, redirecting to displayAlert');
+        displayAlert(message, type);
     }
 
     function setToken(token) {
