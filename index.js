@@ -405,6 +405,68 @@ app.put('/api/admin/tutors/:id/assign', authenticateToken, async (req, res) => {
   }
 });
 
+// Assign Multiple Subjects to Tutor (Admin only)
+app.put('/api/admin/tutors/:id/assign-multiple', authenticateToken, async (req, res) => {
+  try {
+    if (!req.user.isAdmin) {
+      return res.status(403).json({ message: 'Admin access required' });
+    }
+    const { subjectIds } = req.body;
+    if (!Array.isArray(subjectIds)) {
+      return res.status(400).json({ message: 'subjectIds must be an array' });
+    }
+    
+    const subjects = await Subject.find({ _id: { $in: subjectIds } });
+    if (subjects.length !== subjectIds.length) {
+      return res.status(404).json({ message: 'One or more subjects not found' });
+    }
+    
+    const tutor = await Tutor.findById(req.params.id);
+    if (!tutor) return res.status(404).json({ message: 'Tutor not found' });
+    
+    // Update tutor's subjects to the selected ones
+    tutor.subjects = subjects.map(s => s.name);
+    await tutor.save();
+    
+    res.json({ message: 'Tutor assigned to multiple subjects', tutor });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Reject Tutor Application (Admin only)
+app.put('/api/admin/tutors/:id/reject', authenticateToken, async (req, res) => {
+  try {
+    if (!req.user.isAdmin) {
+      return res.status(403).json({ message: 'Admin access required' });
+    }
+    
+    const tutor = await Tutor.findByIdAndDelete(req.params.id);
+    if (!tutor) {
+      return res.status(404).json({ message: 'Tutor not found' });
+    }
+    
+    // Send rejection email to tutor
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: tutor.email,
+      subject: 'Tutor Registration Update',
+      html: `
+        <h2>Tutor Registration</h2>
+        <p>Thank you for your interest in becoming a tutor.</p>
+        <p>After careful review, we regret to inform you that your application has not been approved at this time.</p>
+        <p>You may reapply in the future if you wish.</p>
+      `
+    };
+    
+    await transporter.sendMail(mailOptions);
+    
+    res.json({ message: 'Tutor application rejected and removed', tutor });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 // Get Pending Tutor Requests (Admin only)
 app.get('/api/admin/tutor-requests', authenticateToken, async (req, res) => {
   try {

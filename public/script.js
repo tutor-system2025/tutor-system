@@ -260,22 +260,51 @@ function managerPanelView() {
         </div>
         <div class="panel-section">
             <h3>Tutor Registration Requests</h3>
-            <ul class="list">${state.tutorRequests.map(r => `<li class="tutor-item">
-                <div class="tutor-info">${r.name} (${r.gmail}) - ${r.subjects}</div>
-                <div class="tutor-actions">
-                    <button class="btn btn-small" onclick="approveTutor('${r._id}')">Approve</button>
-                </div>
-            </li>`).join('')}</ul>
+            <ul class="list">${state.tutorRequests.map(r => {
+                const tutorName = r.name || (r.firstName && r.surname ? `${r.firstName} ${r.surname}` : 'Unknown Tutor');
+                const subjects = Array.isArray(r.subjects) ? r.subjects.join(', ') : r.subjects;
+                return `<li class="tutor-item">
+                    <div class="tutor-info">
+                        <strong>${tutorName}</strong> (${r.gmail || r.email})<br>
+                        <strong>Subjects:</strong> ${subjects}<br>
+                        <strong>Experience:</strong> ${r.experience || 'Not specified'} years<br>
+                        <strong>Bio:</strong> ${r.bio || r.description || 'No description provided'}
+                    </div>
+                    <div class="tutor-actions">
+                        <button class="btn btn-small" onclick="approveTutor('${r._id}')">Approve</button>
+                        <button class="btn btn-small" onclick="rejectTutor('${r._id}')">Reject</button>
+                    </div>
+                </li>`;
+            }).join('')}</ul>
         </div>
         <div class="panel-section">
             <h3>Assign Tutors to Subjects</h3>
             <ul class="list">${state.tutors.map(t => {
                 const tutorName = t.name || (t.firstName && t.surname ? `${t.firstName} ${t.surname}` : 'Unknown Tutor');
+                const currentSubjects = Array.isArray(t.subjects) ? t.subjects.join(', ') : t.subjects || 'No subjects assigned';
                 return `<li class="tutor-item">
-                    <div class="tutor-info">${tutorName}</div>
+                    <div class="tutor-info">
+                        <strong>${tutorName}</strong> (${t.email})<br>
+                        <strong>Current Subjects:</strong> ${currentSubjects}<br>
+                        <strong>Experience:</strong> ${t.experience || 'Not specified'} years<br>
+                        <strong>Bio:</strong> ${t.bio || t.description || 'No description provided'}
+                    </div>
                     <div class="tutor-actions">
-                        <select id="assign-${t._id}">${state.subjects.map(s => `<option value="${s._id}" ${t.subjects.includes(s._id) ? 'selected' : ''}>${s.name}</option>`)}</select>
-                        <button class="btn btn-small" onclick="assignTutor('${t._id}')">Assign</button>
+                        <div class="subject-assignment">
+                            <label><strong>Assign Subjects:</strong></label>
+                            <div class="subject-checkboxes">
+                                ${state.subjects.map(s => `
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" 
+                                               id="subject-${t._id}-${s._id}" 
+                                               value="${s._id}"
+                                               ${Array.isArray(t.subjects) && t.subjects.includes(s._id) ? 'checked' : ''}>
+                                        ${s.name}
+                                    </label>
+                                `).join('')}
+                            </div>
+                            <button class="btn btn-small" onclick="assignMultipleSubjects('${t._id}')">Update Subjects</button>
+                        </div>
                     </div>
                 </li>`;
             }).join('')}</ul>
@@ -408,6 +437,23 @@ const API = {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify({ subjectId })
+        });
+        if (!res.ok) throw new Error((await res.json()).message);
+        return res.json();
+    },
+    async assignMultipleSubjects(token, tutorId, subjectIds) {
+        const res = await fetch(`/api/admin/tutors/${tutorId}/assign-multiple`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ subjectIds })
+        });
+        if (!res.ok) throw new Error((await res.json()).message);
+        return res.json();
+    },
+    async rejectTutor(token, tutorId) {
+        const res = await fetch(`/api/admin/tutors/${tutorId}/reject`, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${token}` }
         });
         if (!res.ok) throw new Error((await res.json()).message);
         return res.json();
@@ -554,6 +600,31 @@ async function assignTutor(tutorId) {
     const subjectId = select.value;
     try {
         await API.assignTutor(state.user.token, tutorId, subjectId);
+        await fetchManagerData();
+        render();
+    } catch (e) {
+        app.innerHTML = showError(e.message) + managerPanelView();
+    }
+}
+
+async function assignMultipleSubjects(tutorId) {
+    const checkboxes = document.querySelectorAll(`input[id^="subject-${tutorId}-"]`);
+    const selectedSubjects = Array.from(checkboxes)
+        .filter(cb => cb.checked)
+        .map(cb => cb.value);
+    
+    try {
+        await API.assignMultipleSubjects(state.user.token, tutorId, selectedSubjects);
+        await fetchManagerData();
+        render();
+    } catch (e) {
+        app.innerHTML = showError(e.message) + managerPanelView();
+    }
+}
+
+async function rejectTutor(tutorId) {
+    try {
+        await API.rejectTutor(state.user.token, tutorId);
         await fetchManagerData();
         render();
     } catch (e) {
