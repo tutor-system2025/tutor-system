@@ -15,11 +15,16 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// Remove any existing CSP headers
+// Remove any existing CSP headers and disable all security headers
 app.use((req, res, next) => {
   res.removeHeader('Content-Security-Policy');
   res.removeHeader('X-Content-Security-Policy');
   res.removeHeader('X-WebKit-CSP');
+  res.removeHeader('X-Frame-Options');
+  res.removeHeader('X-XSS-Protection');
+  res.removeHeader('X-Content-Type-Options');
+  res.removeHeader('Referrer-Policy');
+  res.removeHeader('Permissions-Policy');
   next();
 });
 
