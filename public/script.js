@@ -24,13 +24,8 @@ document.addEventListener("DOMContentLoaded", () => {
     function displayAlert(message, type = 'success') {
         const alertDiv = document.createElement('div');
         alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
-        alertDiv.innerHTML = `${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
-        const alertContainer = document.getElementById('alert-container');
-        if (alertContainer) {
-            alertContainer.appendChild(alertDiv);
-        } else {
-            document.body.appendChild(alertDiv);
-        }
+        alertDiv.innerHTML = `${message}<button type=\"button\" class=\"btn-close\" data-bs-dismiss=\"alert\"></button>`;
+        document.body.appendChild(alertDiv);
         setTimeout(() => { if (alertDiv.parentNode) alertDiv.remove(); }, 5000);
     }
     function setToken(token) { localStorage.setItem('token', token); }
