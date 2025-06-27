@@ -513,6 +513,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // Event listeners
     // Navigation event listeners
     document.addEventListener('click', function(e) {
+        console.log('Click event triggered on:', e.target);
+        console.log('Data action:', e.target.getAttribute('data-action'));
+        
         const action = e.target.getAttribute('data-action');
         if (!action) return;
         
@@ -520,19 +523,23 @@ document.addEventListener("DOMContentLoaded", () => {
         
         switch(action) {
             case 'showLogin':
+                console.log('Showing login...');
                 showLogin();
                 break;
             case 'showRegister':
+                console.log('Showing register...');
                 showRegister();
                 break;
             case 'showTab':
                 const tabName = e.target.getAttribute('data-tab');
+                console.log('Showing tab:', tabName);
                 if (tabName) {
                     showTab(tabName, e);
                 }
                 break;
             case 'selectSubject':
                 const subjectName = e.target.getAttribute('data-subject');
+                console.log('Selecting subject:', subjectName);
                 if (subjectName) {
                     selectSubject(subjectName);
                 }
@@ -540,21 +547,25 @@ document.addEventListener("DOMContentLoaded", () => {
             case 'selectTutor':
                 const tutorId = e.target.getAttribute('data-tutor-id');
                 const tutorName = e.target.getAttribute('data-tutor-name');
+                console.log('Selecting tutor:', tutorId, tutorName);
                 if (tutorId && tutorName) {
                     selectTutor(tutorId, tutorName);
                 }
                 break;
             case 'approveTutor':
                 const tutorIdToApprove = e.target.getAttribute('data-tutor-id');
+                console.log('Approving tutor:', tutorIdToApprove);
                 if (tutorIdToApprove) {
                     approveTutor(tutorIdToApprove);
                 }
                 break;
             case 'logout':
+                console.log('Logging out...');
                 logout();
                 break;
             case 'loadSubjects':
                 const page = e.target.getAttribute('data-page');
+                console.log('Loading subjects page:', page);
                 if (page) {
                     loadSubjects(parseInt(page));
                 } else {
@@ -563,6 +574,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 break;
             case 'loadUserBookings':
                 const bookingsPage = e.target.getAttribute('data-page');
+                console.log('Loading bookings page:', bookingsPage);
                 if (bookingsPage) {
                     loadUserBookings(parseInt(bookingsPage));
                 } else {
