@@ -23,12 +23,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// Add custom CSP header
-app.use((req, res, next) => {
-  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com; img-src 'self' data: https:; connect-src 'self' https://tutorial-signup-d60837d8fe04.herokuapp.com;");
-  next();
-});
-
 app.use(helmet({
   contentSecurityPolicy: false
 }));
