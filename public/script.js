@@ -14,6 +14,23 @@ let state = {
 };
 
 const app = document.getElementById('app');
+const topNavButtons = document.getElementById('top-nav-buttons');
+
+function updateTopNav() {
+    if (!state.user) {
+        // Not logged in - show login/register buttons
+        topNavButtons.innerHTML = `
+            <button class="top-nav-btn" onclick="setView('login')">Login</button>
+            <button class="top-nav-btn" onclick="setView('register')">Register</button>
+        `;
+    } else {
+        // Logged in - show user info and logout
+        topNavButtons.innerHTML = `
+            <span class="user-info">Hi, ${state.user.username}</span>
+            <button class="top-nav-btn" onclick="logout()">Logout</button>
+        `;
+    }
+}
 
 function setView(view) {
     state.currentView = view;
@@ -35,11 +52,12 @@ function navBar() {
         <button class="link" onclick="setView('myBookings')">My Bookings</button>
         <button class="link" onclick="setView('profile')">Profile</button>
         ${state.user.isManager ? '<button class="link" onclick="setView(\'manager\')">Manager Panel</button>' : ''}
-        <button class="link" onclick="logout()">Logout</button>
     </nav>`;
 }
 
 function render() {
+    updateTopNav(); // Update top navigation first
+    
     let html = '';
     if (!state.user) {
         html = state.currentView === 'register' ? registerView() : loginView();
