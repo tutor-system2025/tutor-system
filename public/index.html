@@ -75,8 +75,8 @@
                     Parnell Tutor System
                 </a>
                 <div class="navbar-nav flex-row" id="navItems">
-                    <button class="btn btn-outline-light me-2" data-action="showLogin">Login</button>
-                    <button class="btn btn-primary" data-action="showRegister">Register</button>
+                    <button class="btn btn-outline-light me-2" data-action="showLogin" aria-label="Show login form">Login</button>
+                    <button class="btn btn-primary" data-action="showRegister" aria-label="Show registration form">Register</button>
                 </div>
             </div>
         </nav>
@@ -90,14 +90,14 @@
                         <h3 class="text-center mb-4">Login</h3>
                         <form id="loginFormElement">
                             <div class="mb-3">
-                                <label class="form-label">Email</label>
-                                <input type="email" class="form-control" id="loginEmail" placeholder="Enter your email" required>
+                                <label for="loginEmail" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="loginEmail" name="email" placeholder="Enter your email" aria-label="Email address" required>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">Password</label>
-                                <input type="password" class="form-control" id="loginPassword" placeholder="Enter your password" required>
+                                <label for="loginPassword" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="loginPassword" name="password" placeholder="Enter your password" aria-label="Password" required>
                             </div>
-                            <button type="submit" class="btn btn-primary w-100">Login</button>
+                            <button type="submit" class="btn btn-primary w-100" aria-label="Login to account">Login</button>
                         </form>
                         <div class="text-center mt-3">
                             <a href="#" data-action="showRegister">Don't have an account? Register</a>
@@ -115,22 +115,22 @@
                         <h3 class="text-center mb-4">Register</h3>
                         <form id="registerFormElement">
                             <div class="mb-3">
-                                <label class="form-label">First Name</label>
-                                <input type="text" class="form-control" id="regFirstName" placeholder="First Name" required>
+                                <label for="regFirstName" class="form-label">First Name</label>
+                                <input type="text" class="form-control" id="regFirstName" name="firstName" placeholder="First Name" aria-label="First name" required>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">Surname</label>
-                                <input type="text" class="form-control" id="regSurname" placeholder="Surname" required>
+                                <label for="regSurname" class="form-label">Surname</label>
+                                <input type="text" class="form-control" id="regSurname" name="surname" placeholder="Surname" aria-label="Surname" required>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">Email</label>
-                                <input type="email" class="form-control" id="regEmail" placeholder="Enter your email" required>
+                                <label for="regEmail" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="regEmail" name="email" placeholder="Enter your email" aria-label="Email address" required>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">Password</label>
-                                <input type="password" class="form-control" id="regPassword" placeholder="Enter your password" required>
+                                <label for="regPassword" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="regPassword" name="password" placeholder="Enter your password" aria-label="Password" required>
                             </div>
-                            <button type="submit" class="btn btn-primary w-100">Register</button>
+                            <button type="submit" class="btn btn-primary w-100" aria-label="Register new account">Register</button>
                         </form>
                         <div class="text-center mt-3">
                             <a href="#" data-action="showLogin">Already have an account? Login</a>
@@ -146,19 +146,19 @@
                 <div class="col-12">
                     <ul class="nav nav-tabs w-100" id="dashboardTabs" style="position: fixed; top: 56px; left: 0; right: 0; z-index: 1040; background: #f8f9fa; border-bottom: 1px solid #dee2e6; padding-left: 16px;">
                         <li class="nav-item">
-                            <a class="nav-link active" data-action="showTab" data-tab="subjects">Subjects</a>
+                            <a class="nav-link active" data-action="showTab" data-tab="subjects" aria-label="View available subjects">Subjects</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" data-action="showTab" data-tab="tutorRegister">Become a Tutor</a>
+                            <a class="nav-link" data-action="showTab" data-tab="tutorRegister" aria-label="Register as a tutor">Become a Tutor</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" data-action="showTab" data-tab="myBookings">My Bookings</a>
+                            <a class="nav-link" data-action="showTab" data-tab="myBookings" aria-label="View my bookings">My Bookings</a>
                         </li>
                         <li class="nav-item" id="adminTab" style="display: none;">
-                            <a class="nav-link" data-action="showTab" data-tab="admin">Admin Panel</a>
+                            <a class="nav-link" data-action="showTab" data-tab="admin" aria-label="Admin panel">Admin Panel</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" data-action="showTab" data-tab="profile">Profile</a>
+                            <a class="nav-link" data-action="showTab" data-tab="profile" aria-label="View and edit profile">Profile</a>
                         </li>
                     </ul>
                 </div>
@@ -183,27 +183,27 @@
                                         <form id="tutorRegisterForm">
                                             <div class="row">
                                                 <div class="col-md-6 mb-3">
-                                                    <label class="form-label">First Name</label>
-                                                    <input type="text" class="form-control" id="tutorFirstName" placeholder="First Name" required>
+                                                    <label for="tutorFirstName" class="form-label">First Name</label>
+                                                    <input type="text" class="form-control" id="tutorFirstName" name="firstName" placeholder="First Name" aria-label="Tutor first name" required>
                                                 </div>
                                                 <div class="col-md-6 mb-3">
-                                                    <label class="form-label">Surname</label>
-                                                    <input type="text" class="form-control" id="tutorSurname" placeholder="Surname" required>
+                                                    <label for="tutorSurname" class="form-label">Surname</label>
+                                                    <input type="text" class="form-control" id="tutorSurname" name="surname" placeholder="Surname" aria-label="Tutor surname" required>
                                                 </div>
                                             </div>
                                             <div class="mb-3">
-                                                <label class="form-label">Email</label>
-                                                <input type="email" class="form-control" id="tutorEmail" placeholder="Enter your email" required>
+                                                <label for="tutorEmail" class="form-label">Email</label>
+                                                <input type="email" class="form-control" id="tutorEmail" name="email" placeholder="Enter your email" aria-label="Tutor email address" required>
                                             </div>
                                             <div class="mb-3">
-                                                <label class="form-label">Subjects</label>
-                                                <input type="text" class="form-control" id="tutorSubjects" placeholder="e.g., Math, Physics, Chemistry" required>
+                                                <label for="tutorSubjects" class="form-label">Subjects</label>
+                                                <input type="text" class="form-control" id="tutorSubjects" name="subjects" placeholder="e.g., Math, Physics, Chemistry" aria-label="Subjects you can tutor" required>
                                             </div>
                                             <div class="mb-3">
-                                                <label class="form-label">Description of your sessions</label>
-                                                <textarea class="form-control" id="tutorDescription" rows="4" placeholder="e.g., available times, session style, topics covered" required></textarea>
+                                                <label for="tutorDescription" class="form-label">Description of your sessions</label>
+                                                <textarea class="form-control" id="tutorDescription" name="description" rows="4" placeholder="e.g., available times, session style, topics covered" aria-label="Description of tutoring sessions" required></textarea>
                                             </div>
-                                            <button type="submit" class="btn btn-primary">Submit Application</button>
+                                            <button type="submit" class="btn btn-primary" aria-label="Submit tutor application">Submit Application</button>
                                         </form>
                                     </div>
                                 </div>
@@ -259,18 +259,18 @@
                                         <h4>Profile</h4>
                                         <form id="profileForm">
                                             <div class="mb-3">
-                                                <label class="form-label">First Name</label>
-                                                <input type="text" class="form-control" id="profileFirstName" placeholder="First Name" required>
+                                                <label for="profileFirstName" class="form-label">First Name</label>
+                                                <input type="text" class="form-control" id="profileFirstName" name="firstName" placeholder="First Name" aria-label="Profile first name" required>
                                             </div>
                                             <div class="mb-3">
-                                                <label class="form-label">Surname</label>
-                                                <input type="text" class="form-control" id="profileSurname" placeholder="Surname" required>
+                                                <label for="profileSurname" class="form-label">Surname</label>
+                                                <input type="text" class="form-control" id="profileSurname" name="surname" placeholder="Surname" aria-label="Profile surname" required>
                                             </div>
                                             <div class="mb-3">
-                                                <label class="form-label">Email</label>
-                                                <input type="email" class="form-control" id="profileEmail" placeholder="Enter your email" required>
+                                                <label for="profileEmail" class="form-label">Email</label>
+                                                <input type="email" class="form-control" id="profileEmail" name="email" placeholder="Enter your email" aria-label="Profile email address" required>
                                             </div>
-                                            <button type="submit" class="btn btn-primary">Update Profile</button>
+                                            <button type="submit" class="btn btn-primary" aria-label="Update profile information">Update Profile</button>
                                         </form>
                                     </div>
                                 </div>
@@ -293,26 +293,26 @@
                 <div class="modal-body">
                     <form id="bookingForm">
                         <div class="mb-3">
-                            <label class="form-label">Subject</label>
-                            <input type="text" class="form-control" id="bookingSubject" placeholder="Subject" readonly>
+                            <label for="bookingSubject" class="form-label">Subject</label>
+                            <input type="text" class="form-control" id="bookingSubject" name="subject" placeholder="Subject" aria-label="Booking subject" readonly>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Tutor</label>
-                            <input type="text" class="form-control" id="bookingTutor" placeholder="Tutor" readonly>
+                            <label for="bookingTutor" class="form-label">Tutor</label>
+                            <input type="text" class="form-control" id="bookingTutor" name="tutor" placeholder="Tutor" aria-label="Booking tutor" readonly>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Date</label>
-                            <input type="date" class="form-control" id="bookingDate" required>
+                            <label for="bookingDate" class="form-label">Date</label>
+                            <input type="date" class="form-control" id="bookingDate" name="date" aria-label="Booking date" required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Time Period</label>
-                            <input type="text" class="form-control" id="bookingTimePeriod" placeholder="e.g., 2:00 PM - 4:00 PM" required>
+                            <label for="bookingTimePeriod" class="form-label">Time Period</label>
+                            <input type="text" class="form-control" id="bookingTimePeriod" name="timePeriod" placeholder="e.g., 2:00 PM - 4:00 PM" aria-label="Booking time period" required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Description</label>
-                            <textarea class="form-control" id="bookingDescription" rows="3" placeholder="What would you like to learn?" required></textarea>
+                            <label for="bookingDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="bookingDescription" name="description" rows="3" placeholder="What would you like to learn?" aria-label="Booking description" required></textarea>
                         </div>
-                        <button type="submit" class="btn btn-primary">Book Session</button>
+                        <button type="submit" class="btn btn-primary" aria-label="Book tutoring session">Book Session</button>
                     </form>
                 </div>
             </div>
@@ -322,7 +322,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Force cache refresh with timestamp
-        document.write('<script src="script.js?v=2.0&t=' + Date.now() + '"><\/script>');
+        document.write('<script src="script.js?v=2.1&t=' + Date.now() + '"><\/script>');
     </script>
 </body>
 </html> 
