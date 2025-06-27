@@ -23,18 +23,14 @@ app.use((req, res, next) => {
   next();
 });
 
+// Add custom CSP header
+app.use((req, res, next) => {
+  res.setHeader('Content-Security-Policy', "script-src 'self' https://cdn.jsdelivr.net;");
+  next();
+});
+
 app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
-      scriptSrcAttr: ["'unsafe-inline'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com"],
-      fontSrc: ["'self'", "https://cdnjs.cloudflare.com"],
-      imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'", "https://tutorial-signup-d60837d8fe04.herokuapp.com"]
-    }
-  }
+  contentSecurityPolicy: false
 }));
 app.disable('x-powered-by');
 app.use(express.static('public', {
