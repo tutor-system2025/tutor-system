@@ -352,6 +352,72 @@ app.put('/api/profile', authenticateToken, async (req, res) => {
   }
 });
 
+// Add Subject (Admin only)
+app.post('/api/admin/subjects', authenticateToken, async (req, res) => {
+  try {
+    if (!req.user.isAdmin) {
+      return res.status(403).json({ message: 'Admin access required' });
+    }
+    const { name } = req.body;
+    if (!name) return res.status(400).json({ message: 'Subject name required' });
+    const existing = await Subject.findOne({ name });
+    if (existing) return res.status(400).json({ message: 'Subject already exists' });
+    const subject = new Subject({ name });
+    await subject.save();
+    res.status(201).json({ message: 'Subject added', subject });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Remove Subject (Admin only)
+app.delete('/api/admin/subjects/:id', authenticateToken, async (req, res) => {
+  try {
+    if (!req.user.isAdmin) {
+      return res.status(403).json({ message: 'Admin access required' });
+    }
+    const subject = await Subject.findByIdAndDelete(req.params.id);
+    if (!subject) return res.status(404).json({ message: 'Subject not found' });
+    res.json({ message: 'Subject removed', subject });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Assign Tutor to Subject (Admin only)
+app.put('/api/admin/tutors/:id/assign', authenticateToken, async (req, res) => {
+  try {
+    if (!req.user.isAdmin) {
+      return res.status(403).json({ message: 'Admin access required' });
+    }
+    const { subjectId } = req.body;
+    const subject = await Subject.findById(subjectId);
+    if (!subject) return res.status(404).json({ message: 'Subject not found' });
+    const tutor = await Tutor.findById(req.params.id);
+    if (!tutor) return res.status(404).json({ message: 'Tutor not found' });
+    if (!tutor.subjects.includes(subject.name)) {
+      tutor.subjects.push(subject.name);
+      await tutor.save();
+    }
+    res.json({ message: 'Tutor assigned to subject', tutor });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Get Pending Tutor Requests (Admin only)
+app.get('/api/admin/tutor-requests', authenticateToken, async (req, res) => {
+  try {
+    if (!req.user.isAdmin) {
+      return res.status(403).json({ message: 'Admin access required' });
+    }
+    const pendingTutors = await Tutor.find({ isApproved: false }).sort({ createdAt: -1 });
+    res.json(pendingTutors);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 // Serve frontend
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
