@@ -44,14 +44,34 @@ document.addEventListener("DOMContentLoaded", () => {
         
         console.log('Created alert div:', alertDiv);
         
-        // Always append to body as the safest option
-        try {
-            document.body.appendChild(alertDiv);
-            console.log('Alert appended to body successfully');
-        } catch (error) {
-            console.error('Failed to append alert:', error);
-            // If even body append fails, try to log the message
-            console.log('Alert message:', message);
+        // Enhanced safety check with friendly warning
+        const alertContainer = document.getElementById('alert-container');
+        if (alertContainer) {
+            try {
+                // Use insertBefore to add at the top of the container
+                alertContainer.insertBefore(alertDiv, alertContainer.firstChild);
+                console.log('✅ Alert successfully added to alert-container');
+            } catch (error) {
+                console.error('❌ Failed to append to alert-container:', error);
+                // Fall back to body
+                try {
+                    document.body.appendChild(alertDiv);
+                    console.log('✅ Alert appended to body as fallback');
+                } catch (fallbackError) {
+                    console.error('❌ Failed to append alert to body:', fallbackError);
+                    console.log('📝 Alert message (could not display):', message);
+                }
+            }
+        } else {
+            console.warn("⚠️ alert-container not found in DOM. Adding alert to body instead.");
+            // No alert-container found, use body
+            try {
+                document.body.appendChild(alertDiv);
+                console.log('✅ Alert appended to body (no alert-container found)');
+            } catch (error) {
+                console.error('❌ Failed to append alert:', error);
+                console.log('📝 Alert message (could not display):', message);
+            }
         }
         
         // Auto-remove after 5 seconds
@@ -59,10 +79,10 @@ document.addEventListener("DOMContentLoaded", () => {
             try {
                 if (alertDiv && alertDiv.parentNode) {
                     alertDiv.remove();
-                    console.log('Alert removed successfully');
+                    console.log('✅ Alert removed successfully');
                 }
             } catch (error) {
-                console.error('Failed to remove alert:', error);
+                console.error('❌ Failed to remove alert:', error);
             }
         }, 5000);
     }
