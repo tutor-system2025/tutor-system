@@ -123,8 +123,8 @@ function registerView() {
                 <input type="email" id="register-email" required />
             </div>
             <div class="input-group">
-                <label>Username</label>
-                <input type="text" id="register-username" required />
+                <label>Name</label>
+                <input type="text" id="register-name" placeholder="Enter your full name" required />
             </div>
             <div class="input-group">
                 <label>Password</label>
@@ -207,10 +207,30 @@ function myBookingsView() {
 
 // Profile
 function profileView() {
+    const [firstName, ...surnameArr] = state.user.username.split(' ');
+    const surname = surnameArr.join(' ') || '';
+    
     return `<h2>Profile</h2>
-        <div class="profile-info">
-            <div><strong>Email:</strong> ${state.user.email}</div>
-            <div><strong>Username:</strong> ${state.user.username}</div>
+        <form onsubmit="event.preventDefault(); updateProfile()">
+            <div class="input-group">
+                <label>First Name</label>
+                <input type="text" id="profile-firstName" value="${firstName}" required />
+            </div>
+            <div class="input-group">
+                <label>Surname</label>
+                <input type="text" id="profile-surname" value="${surname}" required />
+            </div>
+            <div class="input-group">
+                <label>Email</label>
+                <input type="email" id="profile-email" value="${state.user.email}" required />
+            </div>
+            <button class="btn" type="submit">Update Profile</button>
+        </form>
+        <div style="text-align:center; margin-top:20px;">
+            <div class="profile-info">
+                <div><strong>Current Name:</strong> ${state.user.username}</div>
+                <div><strong>Current Email:</strong> ${state.user.email}</div>
+            </div>
         </div>`;
 }
 
@@ -265,8 +285,8 @@ const API = {
         if (!res.ok) throw new Error((await res.json()).message);
         return res.json();
     },
-    async register(email, username, password) {
-        const [firstName, ...surnameArr] = username.split(' ');
+    async register(email, name, password) {
+        const [firstName, ...surnameArr] = name.split(' ');
         const surname = surnameArr.join(' ') || ' '; // fallback
         const res = await fetch('/api/register', {
             method: 'POST',
@@ -418,10 +438,10 @@ async function login() {
 
 async function register() {
     const email = document.getElementById('register-email').value;
-    const username = document.getElementById('register-username').value;
+    const name = document.getElementById('register-name').value;
     const password = document.getElementById('register-password').value;
     try {
-        await API.register(email, username, password);
+        await API.register(email, name, password);
         app.innerHTML = showSuccess('Registration successful! Please login.') + loginView();
     } catch (e) {
         app.innerHTML = showError(e.message) + registerView();
@@ -530,6 +550,23 @@ async function assignTutor(tutorId) {
         render();
     } catch (e) {
         app.innerHTML = showError(e.message) + managerPanelView();
+    }
+}
+
+async function updateProfile() {
+    const firstName = document.getElementById('profile-firstName').value;
+    const surname = document.getElementById('profile-surname').value;
+    const email = document.getElementById('profile-email').value;
+    try {
+        await API.updateProfile(state.user.token, firstName, surname, email);
+        // Update local state
+        state.user.email = email;
+        state.user.username = firstName + ' ' + surname;
+        app.innerHTML = showSuccess('Profile updated successfully!');
+        updateTopNav(); // Update the top nav to show new name
+        setTimeout(() => setView('profile'), 2000);
+    } catch (e) {
+        app.innerHTML = showError(e.message) + profileView();
     }
 }
 
