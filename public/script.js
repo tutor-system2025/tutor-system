@@ -248,7 +248,10 @@ function managerPanelView() {
         </div>
         <div class="panel-section">
             <h3>Subjects</h3>
-            <ul class="list">${state.subjects.map(s => `<li>${s.name}</li>`).join('')}</ul>
+            <ul class="list">${state.subjects.map(s => `<li class="subject-item">
+                <span>${s.name}</span>
+                <button class="btn btn-small btn-danger" onclick="removeSubject('${s._id}')">Remove</button>
+            </li>`).join('')}</ul>
             <form onsubmit="event.preventDefault(); addSubject()">
                 <div class="form-row">
                     <div class="input-group">
@@ -305,6 +308,7 @@ function managerPanelView() {
                             </div>
                             <button class="btn btn-small" onclick="assignMultipleSubjects('${t._id}')">Update Subjects</button>
                         </div>
+                        <button class="btn btn-small btn-danger" onclick="removeTutor('${t._id}')">Remove Tutor</button>
                     </div>
                 </li>`;
             }).join('')}</ul>
@@ -453,6 +457,14 @@ const API = {
     async rejectTutor(token, tutorId) {
         const res = await fetch(`/api/admin/tutors/${tutorId}/reject`, {
             method: 'PUT',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error((await res.json()).message);
+        return res.json();
+    },
+    async removeTutor(token, tutorId) {
+        const res = await fetch(`/api/admin/tutors/${tutorId}/remove`, {
+            method: 'DELETE',
             headers: { 'Authorization': `Bearer ${token}` }
         });
         if (!res.ok) throw new Error((await res.json()).message);
@@ -646,6 +658,32 @@ async function updateProfile() {
         setTimeout(() => setView('profile'), 2000);
     } catch (e) {
         app.innerHTML = showError(e.message) + profileView();
+    }
+}
+
+async function removeSubject(subjectId) {
+    if (!confirm('Are you sure you want to remove this subject? This will also remove it from all tutors.')) {
+        return;
+    }
+    try {
+        await API.removeSubject(state.user.token, subjectId);
+        await fetchManagerData();
+        render();
+    } catch (e) {
+        app.innerHTML = showError(e.message) + managerPanelView();
+    }
+}
+
+async function removeTutor(tutorId) {
+    if (!confirm('Are you sure you want to remove this tutor? This action cannot be undone.')) {
+        return;
+    }
+    try {
+        await API.removeTutor(state.user.token, tutorId);
+        await fetchManagerData();
+        render();
+    } catch (e) {
+        app.innerHTML = showError(e.message) + managerPanelView();
     }
 }
 

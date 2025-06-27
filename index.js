@@ -467,6 +467,38 @@ app.put('/api/admin/tutors/:id/reject', authenticateToken, async (req, res) => {
   }
 });
 
+// Remove Tutor (Admin only)
+app.delete('/api/admin/tutors/:id/remove', authenticateToken, async (req, res) => {
+  try {
+    if (!req.user.isAdmin) {
+      return res.status(403).json({ message: 'Admin access required' });
+    }
+    
+    const tutor = await Tutor.findByIdAndDelete(req.params.id);
+    if (!tutor) {
+      return res.status(404).json({ message: 'Tutor not found' });
+    }
+    
+    // Send removal notification email to tutor
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: tutor.email,
+      subject: 'Tutor Account Removed',
+      html: `
+        <h2>Tutor Account Update</h2>
+        <p>Your tutor account has been removed from our system.</p>
+        <p>If you believe this was done in error, please contact us.</p>
+      `
+    };
+    
+    await transporter.sendMail(mailOptions);
+    
+    res.json({ message: 'Tutor removed successfully', tutor });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 // Get Pending Tutor Requests (Admin only)
 app.get('/api/admin/tutor-requests', authenticateToken, async (req, res) => {
   try {
