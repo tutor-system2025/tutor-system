@@ -27,8 +27,9 @@ function updateTopNav() {
         `;
     } else {
         // Logged in - show user info and logout
+        const displayName = state.user.username || (state.user.firstName && state.user.surname ? `${state.user.firstName} ${state.user.surname}` : 'User');
         topNavButtons.innerHTML = `
-            <span class="user-info">Hi, ${state.user.username}</span>
+            <span class="user-info">Hi, ${displayName}</span>
             <button class="top-nav-btn" onclick="logout()">Logout</button>
         `;
     }
@@ -146,13 +147,17 @@ function bookView() {
 
 function chooseTutorView() {
     let tutors = state.tutors.filter(t => t.subjects.includes(state.selectedSubject));
-    let tutorList = tutors.map(t => `<li><button class="link" onclick="selectTutor('${t._id}')">${t.name}</button> <span>(${t.description})</span></li>`).join('');
+    let tutorList = tutors.map(t => {
+        const tutorName = t.name || (t.firstName && t.surname ? `${t.firstName} ${t.surname}` : 'Unknown Tutor');
+        return `<li><button class="link" onclick="selectTutor('${t._id}')">${tutorName}</button> <span>(${t.description || 'No description'})</span></li>`;
+    }).join('');
     return `<h2>Choose a Tutor</h2>
         <ul class="list">${tutorList}</ul>`;
 }
 
 function bookingFormView() {
-    return `<h2>Book Session with ${state.selectedTutorObj.name}</h2>
+    const tutorName = state.selectedTutorObj.name || (state.selectedTutorObj.firstName && state.selectedTutorObj.surname ? `${state.selectedTutorObj.firstName} ${state.selectedTutorObj.surname}` : 'Selected Tutor');
+    return `<h2>Book Session with ${tutorName}</h2>
         <form onsubmit="event.preventDefault(); submitBooking()">
             <div class="input-group">
                 <label>Your Name</label>
@@ -264,13 +269,16 @@ function managerPanelView() {
         </div>
         <div class="panel-section">
             <h3>Assign Tutors to Subjects</h3>
-            <ul class="list">${state.tutors.map(t => `<li class="tutor-item">
-                <div class="tutor-info">${t.name}</div>
-                <div class="tutor-actions">
-                    <select id="assign-${t._id}">${state.subjects.map(s => `<option value="${s._id}" ${t.subjects.includes(s._id) ? 'selected' : ''}>${s.name}</option>`)}</select>
-                    <button class="btn btn-small" onclick="assignTutor('${t._id}')">Assign</button>
-                </div>
-            </li>`).join('')}</ul>
+            <ul class="list">${state.tutors.map(t => {
+                const tutorName = t.name || (t.firstName && t.surname ? `${t.firstName} ${t.surname}` : 'Unknown Tutor');
+                return `<li class="tutor-item">
+                    <div class="tutor-info">${tutorName}</div>
+                    <div class="tutor-actions">
+                        <select id="assign-${t._id}">${state.subjects.map(s => `<option value="${s._id}" ${t.subjects.includes(s._id) ? 'selected' : ''}>${s.name}</option>`)}</select>
+                        <button class="btn btn-small" onclick="assignTutor('${t._id}')">Assign</button>
+                    </div>
+                </li>`;
+            }).join('')}</ul>
         </div>`;
 }
 
