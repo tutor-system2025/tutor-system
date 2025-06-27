@@ -46,6 +46,11 @@ document.addEventListener("DOMContentLoaded", () => {
         
         // Enhanced safety check with friendly warning
         const alertContainer = document.getElementById('alert-container');
+        console.log('🔍 Looking for alert-container...');
+        console.log('🔍 alert-container found:', alertContainer);
+        console.log('🔍 document.readyState:', document.readyState);
+        console.log('🔍 document.body:', document.body);
+        
         if (alertContainer) {
             try {
                 // Use insertBefore to add at the top of the container
@@ -64,6 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         } else {
             console.warn("⚠️ alert-container not found in DOM. Adding alert to body instead.");
+            console.warn("⚠️ This might be due to DOM not being ready or element not existing.");
             // No alert-container found, use body
             try {
                 document.body.appendChild(alertDiv);
