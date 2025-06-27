@@ -1,3 +1,6 @@
+// Debug: Check if script is loading
+console.log('Script.js is loading...');
+
 // Global variables
 let currentUser = null;
 let currentToken = null;
@@ -705,4 +708,11 @@ async function validateTokenAndShowDashboard() {
         clearAuth();
         showLogin();
     }
-} 
+}
+
+// Debug: Test if DOM is accessible
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM is ready!');
+    console.log('Login form element:', document.getElementById('loginForm'));
+    console.log('Register form element:', document.getElementById('registerForm'));
+}); 
