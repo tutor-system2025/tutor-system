@@ -37,11 +37,23 @@ document.addEventListener("DOMContentLoaded", () => {
     function getToken() { return localStorage.getItem('token'); }
     function clearAuth() { localStorage.removeItem('token'); currentUser = null; }
 
+    function updateNavbar(loggedIn) {
+        document.getElementById('showLoginBtn').style.display = loggedIn ? 'none' : '';
+        document.getElementById('showRegisterBtn').style.display = loggedIn ? 'none' : '';
+        document.getElementById('navbarLogoutBtn').style.display = loggedIn ? '' : 'none';
+    }
+
     // Navigation
     document.getElementById('showLoginBtn').onclick = showLogin;
     document.getElementById('showRegisterBtn').onclick = showRegister;
     document.getElementById('toRegister').onclick = (e) => { e.preventDefault(); showRegister(); };
     document.getElementById('toLogin').onclick = (e) => { e.preventDefault(); showLogin(); };
+    document.getElementById('navbarLogoutBtn').onclick = () => {
+        clearAuth();
+        showLogin();
+        updateNavbar(false);
+        displayAlert('Logged out successfully!');
+    };
 
     // Login
     document.getElementById('loginFormElement').onsubmit = async (e) => {
@@ -59,6 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
             setToken(data.token);
             currentUser = data.user;
             showDashboard();
+            updateNavbar(true);
             displayAlert('Login successful!');
         } catch (err) {
             displayAlert(err.message, 'danger');
@@ -82,16 +95,10 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!res.ok) throw new Error(data.message || 'Registration failed');
             displayAlert('Registration successful! Please login.');
             showLogin();
+            updateNavbar(false);
         } catch (err) {
             displayAlert(err.message, 'danger');
         }
-    };
-
-    // Logout
-    document.getElementById('logoutBtn').onclick = () => {
-        clearAuth();
-        showLogin();
-        displayAlert('Logged out successfully!');
     };
 
     // Auto-login if token exists
@@ -106,12 +113,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (!res.ok) throw new Error();
                 currentUser = data;
                 showDashboard();
+                updateNavbar(true);
             } catch {
                 clearAuth();
                 showLogin();
+                updateNavbar(false);
             }
         } else {
             showLogin();
+            updateNavbar(false);
         }
     })();
 }); 
