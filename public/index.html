@@ -3,326 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tutor System</title>
+    <title>Tutor System (Minimal)</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-        }
-        .card {
-            border: none;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-        .btn-primary {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            border: none;
-            border-radius: 25px;
-            padding: 10px 30px;
-        }
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-        .form-control {
-            border-radius: 10px;
-            border: 2px solid #e9ecef;
-        }
-        .form-control:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-        }
-        .nav-tabs .nav-link {
-            border: none;
-            border-radius: 10px 10px 0 0;
-            margin-right: 5px;
-        }
-        .nav-tabs .nav-link.active {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-        }
-        .booking-card {
-            transition: transform 0.3s ease;
-        }
-        .booking-card:hover {
-            transform: translateY(-5px);
-        }
-        #alert-container {
-            position: fixed;
-            top: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 9999;
-            min-width: 300px;
-            max-width: 500px;
-        }
-        #alert-container .alert {
-            margin-bottom: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
+        body { background: #f8f9fa; min-height: 100vh; }
+        #alert-container { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); z-index: 9999; min-width: 300px; max-width: 500px; }
+        #alert-container .alert { margin-bottom: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .centered { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+        .card { max-width: 400px; margin: 0 auto; }
     </style>
 </head>
 <body>
     <div id="alert-container"></div>
-    <div class="container-fluid">
-        <!-- Navigation -->
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark" style="position: fixed; top: 0; left: 0; right: 0; width: 100vw; z-index: 1050; border-radius: 0;">
-            <div class="d-flex justify-content-between align-items-center w-100 px-4">
-                <a class="navbar-brand m-0" href="#">
-                    <i class="fas fa-graduation-cap me-2"></i>
-                    Parnell Tutor System
-                </a>
-                <div class="navbar-nav flex-row" id="navItems">
-                    <button class="btn btn-outline-light me-2" data-action="showLogin" aria-label="Show login form">Login</button>
-                    <button class="btn btn-primary" data-action="showRegister" aria-label="Show registration form">Register</button>
-                </div>
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container-fluid justify-content-between">
+            <span class="navbar-brand mb-0 h1">Tutor System</span>
+            <div id="navItems">
+                <button class="btn btn-outline-light me-2" id="showLoginBtn">Login</button>
+                <button class="btn btn-primary" id="showRegisterBtn">Register</button>
             </div>
-        </nav>
-
-        <!-- Main Content -->
-        <!-- Login Form -->
-        <div id="loginFormWrapper" style="display: flex; align-items: center; justify-content: center; margin-top: 40px;">
-            <div id="loginForm" style="display: none; width: 100%; max-width: 400px; margin-top: 40px;">
-                <div class="card">
-                    <div class="card-body p-4">
-                        <h3 class="text-center mb-4">Login</h3>
-                        <form id="loginFormElement">
-                            <div class="mb-3">
-                                <label for="loginEmail" class="form-label">Email</label>
-                                <input type="email" class="form-control" id="loginEmail" name="email" placeholder="Enter your email" aria-label="Email address" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="loginPassword" class="form-label">Password</label>
-                                <input type="password" class="form-control" id="loginPassword" name="password" placeholder="Enter your password" aria-label="Password" required>
-                            </div>
-                            <button type="submit" class="btn btn-primary w-100" aria-label="Login to account">Login</button>
-                        </form>
-                        <div class="text-center mt-3">
-                            <a href="#" data-action="showRegister">Don't have an account? Register</a>
-                        </div>
+        </div>
+    </nav>
+    <div class="centered">
+        <div id="loginForm" class="card" style="display:none;">
+            <div class="card-body">
+                <h3 class="text-center mb-4">Login</h3>
+                <form id="loginFormElement">
+                    <div class="mb-3">
+                        <label for="loginEmail" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="loginEmail" required>
                     </div>
+                    <div class="mb-3">
+                        <label for="loginPassword" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="loginPassword" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Login</button>
+                </form>
+                <div class="text-center mt-3">
+                    <a href="#" id="toRegister">Don't have an account? Register</a>
                 </div>
             </div>
         </div>
-
-        <!-- Register Form -->
-        <div id="registerFormWrapper" style="display: flex; align-items: center; justify-content: center; margin-top: 40px;">
-            <div id="registerForm" style="display: none; width: 100%; max-width: 400px;">
-                <div class="card">
-                    <div class="card-body p-4">
-                        <h3 class="text-center mb-4">Register</h3>
-                        <form id="registerFormElement">
-                            <div class="mb-3">
-                                <label for="regFirstName" class="form-label">First Name</label>
-                                <input type="text" class="form-control" id="regFirstName" name="firstName" placeholder="First Name" aria-label="First name" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="regSurname" class="form-label">Surname</label>
-                                <input type="text" class="form-control" id="regSurname" name="surname" placeholder="Surname" aria-label="Surname" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="regEmail" class="form-label">Email</label>
-                                <input type="email" class="form-control" id="regEmail" name="email" placeholder="Enter your email" aria-label="Email address" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="regPassword" class="form-label">Password</label>
-                                <input type="password" class="form-control" id="regPassword" name="password" placeholder="Enter your password" aria-label="Password" required>
-                            </div>
-                            <button type="submit" class="btn btn-primary w-100" aria-label="Register new account">Register</button>
-                        </form>
-                        <div class="text-center mt-3">
-                            <a href="#" data-action="showLogin">Already have an account? Login</a>
-                        </div>
+        <div id="registerForm" class="card" style="display:none;">
+            <div class="card-body">
+                <h3 class="text-center mb-4">Register</h3>
+                <form id="registerFormElement">
+                    <div class="mb-3">
+                        <label for="regFirstName" class="form-label">First Name</label>
+                        <input type="text" class="form-control" id="regFirstName" required>
                     </div>
+                    <div class="mb-3">
+                        <label for="regSurname" class="form-label">Surname</label>
+                        <input type="text" class="form-control" id="regSurname" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="regEmail" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="regEmail" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="regPassword" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="regPassword" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Register</button>
+                </form>
+                <div class="text-center mt-3">
+                    <a href="#" id="toLogin">Already have an account? Login</a>
                 </div>
             </div>
         </div>
-
-        <!-- Dashboard -->
-        <div id="dashboard" style="display: none;">
-            <div class="row">
-                <div class="col-12">
-                    <ul class="nav nav-tabs w-100" id="dashboardTabs" style="position: fixed; top: 56px; left: 0; right: 0; z-index: 1040; background: #f8f9fa; border-bottom: 1px solid #dee2e6; padding-left: 16px;">
-                        <li class="nav-item">
-                            <a class="nav-link active" data-action="showTab" data-tab="subjects" aria-label="View available subjects">Subjects</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" data-action="showTab" data-tab="tutorRegister" aria-label="Register as a tutor">Become a Tutor</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" data-action="showTab" data-tab="myBookings" aria-label="View my bookings">My Bookings</a>
-                        </li>
-                        <li class="nav-item" id="adminTab" style="display: none;">
-                            <a class="nav-link" data-action="showTab" data-tab="admin" aria-label="Admin panel">Admin Panel</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" data-action="showTab" data-tab="profile" aria-label="View and edit profile">Profile</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-            <div style="height: 0;"></div>
-            <div id="dashboardContent">
-                <!-- Subjects Tab -->
-                <div id="subjectsTab" class="tab-content mt-4">
-                    <div class="row" id="subjectsList">
-                        <!-- Subjects will be loaded here -->
-                    </div>
-                </div>
-
-                <!-- Tutor Registration Tab -->
-                <div id="tutorRegisterTab" class="tab-content" style="display: none;">
-                    <div style="display: flex; align-items: center; justify-content: center; margin-top: 40px;">
-                        <div class="row justify-content-center w-100">
-                            <div class="col-md-8 col-lg-6">
-                                <div class="card mx-auto" style="max-width: 600px;">
-                                    <div class="card-body">
-                                        <h4>Become a Tutor</h4>
-                                        <form id="tutorRegisterForm">
-                                            <div class="row">
-                                                <div class="col-md-6 mb-3">
-                                                    <label for="tutorFirstName" class="form-label">First Name</label>
-                                                    <input type="text" class="form-control" id="tutorFirstName" name="firstName" placeholder="First Name" aria-label="Tutor first name" required>
-                                                </div>
-                                                <div class="col-md-6 mb-3">
-                                                    <label for="tutorSurname" class="form-label">Surname</label>
-                                                    <input type="text" class="form-control" id="tutorSurname" name="surname" placeholder="Surname" aria-label="Tutor surname" required>
-                                                </div>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="tutorEmail" class="form-label">Email</label>
-                                                <input type="email" class="form-control" id="tutorEmail" name="email" placeholder="Enter your email" aria-label="Tutor email address" required>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="tutorSubjects" class="form-label">Subjects</label>
-                                                <input type="text" class="form-control" id="tutorSubjects" name="subjects" placeholder="e.g., Math, Physics, Chemistry" aria-label="Subjects you can tutor" required>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="tutorDescription" class="form-label">Description of your sessions</label>
-                                                <textarea class="form-control" id="tutorDescription" name="description" rows="4" placeholder="e.g., available times, session style, topics covered" aria-label="Description of tutoring sessions" required></textarea>
-                                            </div>
-                                            <button type="submit" class="btn btn-primary" aria-label="Submit tutor application">Submit Application</button>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- My Bookings Tab -->
-                <div id="myBookingsTab" class="tab-content mt-4" style="display: none;">
-                    <div style="display: flex; align-items: center; justify-content: center; margin-top: 40px;">
-                        <div class="row w-100" id="bookingsList">
-                            <!-- Bookings will be loaded here -->
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Admin Panel Tab -->
-                <div id="adminTab" class="tab-content mt-4" style="display: none;">
-                    <div style="display: flex; align-items: center; justify-content: center; margin-top: 40px;">
-                        <div class="row w-100">
-                            <div class="col-md-6">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <h5>Tutor Applications</h5>
-                                        <div id="tutorApplications">
-                                            <!-- Tutor applications will be loaded here -->
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <h5>All Bookings</h5>
-                                        <div id="allBookings">
-                                            <!-- All bookings will be loaded here -->
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Profile Tab -->
-                <div id="profileTab" class="tab-content" style="display: none;">
-                    <div style="display: flex; align-items: center; justify-content: center; margin-top: 40px;">
-                        <div class="row justify-content-center w-100">
-                            <div class="col-md-6">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <h4>Profile</h4>
-                                        <form id="profileForm">
-                                            <div class="mb-3">
-                                                <label for="profileFirstName" class="form-label">First Name</label>
-                                                <input type="text" class="form-control" id="profileFirstName" name="firstName" placeholder="First Name" aria-label="Profile first name" required>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="profileSurname" class="form-label">Surname</label>
-                                                <input type="text" class="form-control" id="profileSurname" name="surname" placeholder="Surname" aria-label="Profile surname" required>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="profileEmail" class="form-label">Email</label>
-                                                <input type="email" class="form-control" id="profileEmail" name="email" placeholder="Enter your email" aria-label="Profile email address" required>
-                                            </div>
-                                            <button type="submit" class="btn btn-primary" aria-label="Update profile information">Update Profile</button>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        <div id="dashboard" class="card" style="display:none;">
+            <div class="card-body text-center">
+                <h3>Welcome, <span id="userName"></span>!</h3>
+                <button class="btn btn-secondary mt-4" id="logoutBtn">Logout</button>
             </div>
         </div>
     </div>
-
-    <!-- Booking Modal -->
-    <div class="modal fade" id="bookingModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Book Session</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" title="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="bookingForm">
-                        <div class="mb-3">
-                            <label for="bookingSubject" class="form-label">Subject</label>
-                            <input type="text" class="form-control" id="bookingSubject" name="subject" placeholder="Subject" aria-label="Booking subject" readonly>
-                        </div>
-                        <div class="mb-3">
-                            <label for="bookingTutor" class="form-label">Tutor</label>
-                            <input type="text" class="form-control" id="bookingTutor" name="tutor" placeholder="Tutor" aria-label="Booking tutor" readonly>
-                        </div>
-                        <div class="mb-3">
-                            <label for="bookingDate" class="form-label">Date</label>
-                            <input type="date" class="form-control" id="bookingDate" name="date" aria-label="Booking date" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="bookingTimePeriod" class="form-label">Time Period</label>
-                            <input type="text" class="form-control" id="bookingTimePeriod" name="timePeriod" placeholder="e.g., 2:00 PM - 4:00 PM" aria-label="Booking time period" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="bookingDescription" class="form-label">Description</label>
-                            <textarea class="form-control" id="bookingDescription" name="description" rows="3" placeholder="What would you like to learn?" aria-label="Booking description" required></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary" aria-label="Book tutoring session">Book Session</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Force cache refresh with timestamp
-        document.write('<script src="script.js?v=3.1&t=' + Date.now() + '"><\/script>');
-    </script>
+    <script src="script.js?v=mini"></script>
 </body>
 </html> 
