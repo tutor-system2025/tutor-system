@@ -23,6 +23,12 @@ app.use((req, res, next) => {
   next();
 });
 
+// Force a permissive CSP header
+app.use((req, res, next) => {
+  res.setHeader('Content-Security-Policy', "script-src * 'unsafe-inline' 'unsafe-eval';");
+  next();
+});
+
 app.use(helmet({
   contentSecurityPolicy: false
 }));
