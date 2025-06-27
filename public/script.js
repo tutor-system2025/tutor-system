@@ -515,11 +515,17 @@ document.addEventListener("DOMContentLoaded", () => {
     document.addEventListener('click', function(e) {
         console.log('Click event triggered on:', e.target);
         console.log('Data action:', e.target.getAttribute('data-action'));
+        console.log('Element tag name:', e.target.tagName);
+        console.log('Element class list:', e.target.classList);
         
         const action = e.target.getAttribute('data-action');
-        if (!action) return;
+        if (!action) {
+            console.log('No data-action found, returning');
+            return;
+        }
         
         e.preventDefault();
+        console.log('Processing action:', action);
         
         switch(action) {
             case 'showLogin':
@@ -580,6 +586,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 } else {
                     loadUserBookings();
                 }
+                break;
+            default:
+                console.log('Unknown action:', action);
                 break;
         }
     });
