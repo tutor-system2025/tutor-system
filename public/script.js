@@ -15,6 +15,8 @@ let state = {
 
 const app = document.getElementById('app');
 const topNavButtons = document.getElementById('top-nav-buttons');
+const uiNav = document.getElementById('ui-nav');
+const uiNavButtons = document.getElementById('ui-nav-buttons');
 
 function updateTopNav() {
     if (!state.user) {
@@ -32,6 +34,30 @@ function updateTopNav() {
     }
 }
 
+function updateUINav() {
+    if (!state.user) {
+        // Not logged in - hide UI navigation
+        uiNav.style.display = 'none';
+    } else {
+        // Logged in - show UI navigation buttons
+        uiNav.style.display = 'flex';
+        const isActive = (view) => state.currentView === view ? 'active' : '';
+        
+        let buttons = `
+            <button class="ui-nav-btn ${isActive('book')}" onclick="setView('book')">Book Session</button>
+            <button class="ui-nav-btn ${isActive('becomeTutor')}" onclick="setView('becomeTutor')">Become Tutor</button>
+            <button class="ui-nav-btn ${isActive('myBookings')}" onclick="setView('myBookings')">My Bookings</button>
+            <button class="ui-nav-btn ${isActive('profile')}" onclick="setView('profile')">Profile</button>
+        `;
+        
+        if (state.user.isManager) {
+            buttons += `<button class="ui-nav-btn ${isActive('manager')}" onclick="setView('manager')">Manager Panel</button>`;
+        }
+        
+        uiNavButtons.innerHTML = buttons;
+    }
+}
+
 function setView(view) {
     state.currentView = view;
     render();
@@ -45,18 +71,12 @@ function showSuccess(msg) {
 }
 
 function navBar() {
-    if (!state.user) return '';
-    return `<nav>
-        <button class="link" onclick="setView('book')">Book Session</button>
-        <button class="link" onclick="setView('becomeTutor')">Become Tutor</button>
-        <button class="link" onclick="setView('myBookings')">My Bookings</button>
-        <button class="link" onclick="setView('profile')">Profile</button>
-        ${state.user.isManager ? '<button class="link" onclick="setView(\'manager\')">Manager Panel</button>' : ''}
-    </nav>`;
+    return ''; // No longer needed since we have the white navigation bar
 }
 
 function render() {
     updateTopNav(); // Update top navigation first
+    updateUINav(); // Update UI navigation second
     
     let html = '';
     if (!state.user) {
@@ -72,7 +92,6 @@ function render() {
             case 'manager': html = managerPanelView(); break;
             default: html = bookView(); break;
         }
-        html = navBar() + html;
     }
     app.innerHTML = html;
 }

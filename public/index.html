@@ -15,10 +15,10 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             margin: 0;
             min-height: 100vh;
-            padding-top: 60px; /* Space for fixed header */
+            padding-top: 120px; /* Space for both headers */
         }
         
-        /* Top Navigation Bar */
+        /* Top Navigation Bar (Black) */
         .top-nav {
             position: fixed;
             top: 0;
@@ -69,12 +69,59 @@
             font-weight: 600;
         }
         
+        /* User Interface Navigation Bar (White) */
+        .ui-nav {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-bottom: 1px solid #e1e5e9;
+        }
+        
+        .ui-nav-buttons {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .ui-nav-btn {
+            background: transparent;
+            color: #333;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        
+        .ui-nav-btn:hover {
+            background: #f0f4ff;
+            color: #667eea;
+        }
+        
+        .ui-nav-btn.active {
+            background: #667eea;
+            color: white;
+        }
+        
         /* Main Content */
         .main-content {
             display: flex;
             align-items: center;
             justify-content: center;
-            min-height: calc(100vh - 60px);
+            min-height: calc(100vh - 120px);
             padding: 20px;
         }
         
@@ -157,11 +204,7 @@
         }
         
         nav {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 30px;
-            justify-content: center;
+            display: none; /* Hide the old nav since we have the white strip now */
         }
         
         .link {
@@ -290,6 +333,10 @@
         }
         
         @media (max-width: 600px) {
+            body {
+                padding-top: 140px; /* More space for mobile */
+            }
+            
             .top-nav {
                 padding: 10px 15px;
             }
@@ -307,14 +354,22 @@
                 font-size: 12px;
             }
             
+            .ui-nav {
+                padding: 10px 15px;
+            }
+            
+            .ui-nav-buttons {
+                gap: 10px;
+            }
+            
+            .ui-nav-btn {
+                padding: 8px 16px;
+                font-size: 14px;
+            }
+            
             #app {
                 padding: 20px;
                 margin: 10px;
-            }
-            
-            nav {
-                flex-direction: column;
-                align-items: center;
             }
             
             .form-row {
@@ -333,10 +388,17 @@
     </style>
 </head>
 <body>
-    <!-- Top Navigation Bar -->
+    <!-- Top Navigation Bar (Black) -->
     <div class="top-nav">
         <div class="brand">Parnell Tutor Website</div>
         <div class="top-nav-buttons" id="top-nav-buttons">
+            <!-- Will be populated by JavaScript -->
+        </div>
+    </div>
+    
+    <!-- User Interface Navigation Bar (White) -->
+    <div class="ui-nav" id="ui-nav">
+        <div class="ui-nav-buttons" id="ui-nav-buttons">
             <!-- Will be populated by JavaScript -->
         </div>
     </div>
