@@ -149,12 +149,33 @@ function bookView() {
 }
 
 function chooseTutorView() {
-    let tutors = state.tutors.filter(t => t.subjects.includes(state.selectedSubject));
+    // Get the selected subject name
+    const selectedSubject = state.subjects.find(s => s._id === state.selectedSubject);
+    const subjectName = selectedSubject ? selectedSubject.name : '';
+    
+    console.log('chooseTutorView - selectedSubject ID:', state.selectedSubject);
+    console.log('chooseTutorView - subjectName:', subjectName);
+    console.log('chooseTutorView - all tutors:', state.tutors);
+    
+    // Filter approved tutors who teach this subject
+    let tutors = state.tutors.filter(t => 
+        t.isApproved !== false && 
+        Array.isArray(t.subjects) && 
+        t.subjects.includes(subjectName)
+    );
+    
+    console.log('chooseTutorView - filtered tutors for subject:', tutors);
+    
     let tutorList = tutors.map(t => {
         const tutorName = t.name || (t.firstName && t.surname ? `${t.firstName} ${t.surname}` : 'Unknown Tutor');
-        return `<li><button class="link" onclick="selectTutor('${t._id}')">${tutorName}</button> <span>(${t.description || 'No description'})</span></li>`;
+        return `<li><button class="link" onclick="selectTutor('${t._id}')">${tutorName}</button> <span>(${t.description || t.bio || 'No description'})</span></li>`;
     }).join('');
-    return `<h2>Choose a Tutor</h2>
+    
+    if (tutorList === '') {
+        tutorList = '<li><em>No tutors available for this subject yet.</em></li>';
+    }
+    
+    return `<h2>Choose a Tutor for ${subjectName}</h2>
         <ul class="list">${tutorList}</ul>`;
 }
 
@@ -551,7 +572,8 @@ function logout() {
 
 async function fetchUserData() {
     state.subjects = await API.getSubjects();
-    state.tutors = [];
+    // Fetch all approved tutors for booking sessions
+    state.tutors = await API.getAllTutors(state.user.token);
     state.myBookings = await API.getMyBookings(state.user.token);
     state.profile = { email: state.user.email, username: state.user.username };
 }
@@ -573,8 +595,7 @@ async function selectSubject(subjectId) {
     console.log('Current view before selectSubject:', state.currentView);
     
     state.selectedSubject = subjectId;
-    const subject = state.subjects.find(s => s._id === subjectId);
-    state.tutors = await API.getTutors(subject.name);
+    // Don't call API.getTutors since we'll filter from state in chooseTutorView
     state.selectedTutor = null;
     setView('chooseTutor');
     
