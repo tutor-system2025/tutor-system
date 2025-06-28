@@ -665,22 +665,22 @@ function managerPanelView() {
                         <strong>Bio:</strong> ${t.bio || t.description || 'No description provided'}
                     </div>
                     <div class="tutor-actions">
-                        <div class="subject-assignment">
-                            <label><strong>Assign Subjects:</strong></label>
-                            <div class="subject-checkboxes">
-                                ${state.subjects.map(s => `
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" 
-                                               id="subject-${t._id}-${s._id}" 
-                                               value="${s._id}"
-                                               ${Array.isArray(t.subjects) && t.subjects.includes(s.name) ? 'checked' : ''}>
-                                        ${s.name}
-                                    </label>
-                                `).join('')}
-                            </div>
-                            <button class="btn btn-small" onclick="assignMultipleSubjects('${t._id}')">Update Subjects</button>
-                        </div>
                         <button class="btn btn-small btn-danger" onclick="removeTutor('${t._id}')">Remove Tutor</button>
+                    </div>
+                    <div class="subject-assignment">
+                        <label><strong>Assign Subjects:</strong></label>
+                        <div class="subject-checkboxes">
+                            ${state.subjects.map(s => `
+                                <label class="checkbox-label">
+                                    <input type="checkbox" 
+                                           id="subject-${t._id}-${s._id}" 
+                                           value="${s._id}"
+                                           ${Array.isArray(t.subjects) && t.subjects.includes(s.name) ? 'checked' : ''}>
+                                    ${s.name}
+                                </label>
+                            `).join('')}
+                        </div>
+                        <button class="btn btn-small" onclick="assignMultipleSubjects('${t._id}')">Update Subjects</button>
                     </div>
                 </li>`;
             }).join('')}</ul>
