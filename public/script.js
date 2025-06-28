@@ -102,12 +102,12 @@ function loginView() {
     return `<h1>Tutor Booking System</h1>
         <form onsubmit="event.preventDefault(); login()">
             <div class="input-group">
-                <label>Email</label>
-                <input type="email" id="login-email" required />
+                <label for="login-email">Email</label>
+                <input type="email" id="login-email" placeholder="Enter your email address" required />
             </div>
             <div class="input-group">
-                <label>Password</label>
-                <input type="password" id="login-password" required />
+                <label for="login-password">Password</label>
+                <input type="password" id="login-password" placeholder="Enter your password" required />
             </div>
             <button class="btn" type="submit">Login</button>
         </form>
@@ -120,16 +120,16 @@ function registerView() {
     return `<h1>Register</h1>
         <form onsubmit="event.preventDefault(); register()">
             <div class="input-group">
-                <label>Email</label>
-                <input type="email" id="register-email" required />
+                <label for="register-email">Email</label>
+                <input type="email" id="register-email" placeholder="Enter your email address" required />
             </div>
             <div class="input-group">
-                <label>Name</label>
+                <label for="register-name">Name</label>
                 <input type="text" id="register-name" placeholder="Enter your full name" required />
             </div>
             <div class="input-group">
-                <label>Password</label>
-                <input type="password" id="register-password" required />
+                <label for="register-password">Password</label>
+                <input type="password" id="register-password" placeholder="Enter your password" required />
             </div>
             <button class="btn" type="submit">Register</button>
         </form>
@@ -160,20 +160,20 @@ function bookingFormView() {
     return `<h2>Book Session with ${tutorName}</h2>
         <form onsubmit="event.preventDefault(); submitBooking()">
             <div class="input-group">
-                <label>Your Name</label>
-                <input type="text" id="booking-name" required />
+                <label for="booking-name">Your Name</label>
+                <input type="text" id="booking-name" placeholder="Enter your full name" required />
             </div>
             <div class="input-group">
-                <label>Your Email</label>
-                <input type="email" id="booking-email" value="${state.user.email}" required />
+                <label for="booking-email">Your Email</label>
+                <input type="email" id="booking-email" value="${state.user.email}" placeholder="Enter your email address" required />
             </div>
             <div class="input-group">
-                <label>Time</label>
+                <label for="booking-time">Time</label>
                 <input type="datetime-local" id="booking-time" required />
             </div>
             <div class="input-group">
-                <label>What do you need help with?</label>
-                <textarea id="booking-desc" required></textarea>
+                <label for="booking-desc">What do you need help with?</label>
+                <textarea id="booking-desc" placeholder="Describe what you need help with..." required></textarea>
             </div>
             <button class="btn" type="submit">Book</button>
         </form>`;
@@ -184,20 +184,20 @@ function becomeTutorView() {
     return `<h2>Become a Tutor</h2>
         <form onsubmit="event.preventDefault(); submitTutorRequest()">
             <div class="input-group">
-                <label>Name</label>
-                <input type="text" id="tutor-name" required />
+                <label for="tutor-name">Name</label>
+                <input type="text" id="tutor-name" placeholder="Enter your full name" required />
             </div>
             <div class="input-group">
-                <label>Gmail</label>
-                <input type="email" id="tutor-gmail" required />
+                <label for="tutor-gmail">Gmail</label>
+                <input type="email" id="tutor-gmail" placeholder="Enter your Gmail address" required />
             </div>
             <div class="input-group">
-                <label>Subjects to Teach</label>
+                <label for="tutor-subjects">Subjects to Teach</label>
                 <input type="text" id="tutor-subjects" placeholder="e.g. Math, Physics" required />
             </div>
             <div class="input-group">
-                <label>Description (time, level, etc.)</label>
-                <textarea id="tutor-desc" required></textarea>
+                <label for="tutor-desc">Description (time, level, etc.)</label>
+                <textarea id="tutor-desc" placeholder="Describe your teaching experience and availability..." required></textarea>
             </div>
             <button class="btn" type="submit">Submit</button>
         </form>`;
@@ -218,16 +218,16 @@ function profileView() {
     return `<h2>Profile</h2>
         <form onsubmit="event.preventDefault(); updateProfile()">
             <div class="input-group">
-                <label>First Name</label>
-                <input type="text" id="profile-firstName" value="${firstName}" required />
+                <label for="profile-firstName">First Name</label>
+                <input type="text" id="profile-firstName" value="${firstName}" placeholder="Enter your first name" required />
             </div>
             <div class="input-group">
-                <label>Surname</label>
-                <input type="text" id="profile-surname" value="${surname}" required />
+                <label for="profile-surname">Surname</label>
+                <input type="text" id="profile-surname" value="${surname}" placeholder="Enter your surname" required />
             </div>
             <div class="input-group">
-                <label>Email</label>
-                <input type="email" id="profile-email" value="${state.user.email}" required />
+                <label for="profile-email">Email</label>
+                <input type="email" id="profile-email" value="${state.user.email}" placeholder="Enter your email address" required />
             </div>
             <button class="btn" type="submit">Update Profile</button>
         </form>
