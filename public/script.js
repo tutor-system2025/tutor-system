@@ -290,6 +290,10 @@ function becomeTutorView() {
 function tutorPanelView() {
     // Get the current tutor's information
     const currentTutor = state.tutors.find(t => t.email === state.user.email);
+    console.log('Tutor Panel - currentTutor:', currentTutor);
+    console.log('Tutor Panel - state.myBookings:', state.myBookings);
+    console.log('Tutor Panel - state.tutors:', state.tutors);
+    
     if (!currentTutor) {
         return `<h2>Tutor Panel</h2>
             <div class="error">Tutor information not found. Please contact support.</div>`;
@@ -298,15 +302,26 @@ function tutorPanelView() {
     // Get bookings where this tutor is the tutor (not the student)
     const tutorBookings = state.myBookings.filter(b => {
         // Check if the booking's tutor matches the current tutor
+        console.log('Checking booking:', b);
+        console.log('Booking tutor:', b.tutor);
+        console.log('Current tutor ID:', currentTutor._id);
+        
         if (b.tutor) {
             if (typeof b.tutor === 'string') {
-                return b.tutor === currentTutor._id;
+                const matches = b.tutor === currentTutor._id;
+                console.log('String comparison:', b.tutor, '===', currentTutor._id, '=', matches);
+                return matches;
             } else if (b.tutor._id) {
-                return b.tutor._id === currentTutor._id;
+                const matches = b.tutor._id === currentTutor._id;
+                console.log('Object comparison:', b.tutor._id, '===', currentTutor._id, '=', matches);
+                return matches;
             }
         }
+        console.log('No tutor match found');
         return false;
     });
+    
+    console.log('Tutor Panel - filtered tutorBookings:', tutorBookings);
     
     let bookingsList = tutorBookings.map(b => {
         // Handle populated user object
@@ -1329,10 +1344,10 @@ async function refreshTutorBookings() {
     try {
         await fetchUserData();
         state.loading = false;
-        setView('tutorPanel'); // Stay on tutor panel instead of calling render()
+        render(); // Use render() instead of setView() to properly refresh the view
     } catch (error) {
         state.loading = false;
-        setView('tutorPanel'); // Stay on tutor panel even on error
+        render(); // Use render() instead of setView() even on error
         console.error('Error refreshing tutor bookings:', error);
     }
 }
