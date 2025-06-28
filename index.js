@@ -276,6 +276,7 @@ app.get('/api/admin/tutors', authenticateToken, async (req, res) => {
     }
     
     const tutors = await Tutor.find().sort({ createdAt: -1 });
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.json(tutors);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
@@ -312,6 +313,7 @@ app.put('/api/admin/tutors/:id/approve', authenticateToken, async (req, res) => 
     
     await transporter.sendMail(mailOptions);
     
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.json({ message: 'Tutor approved successfully', tutor });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
@@ -329,6 +331,7 @@ app.get('/api/admin/bookings', authenticateToken, async (req, res) => {
       .populate('tutor', 'firstName surname email')
       .sort({ createdAt: -1 });
     
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.json(bookings);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
@@ -428,6 +431,7 @@ app.put('/api/admin/tutors/:id/assign-multiple', authenticateToken, async (req, 
     tutor.subjects = subjects.map(s => s.name);
     await tutor.save();
     
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.json({ message: 'Tutor assigned to multiple subjects', tutor });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
@@ -506,6 +510,7 @@ app.get('/api/admin/tutor-requests', authenticateToken, async (req, res) => {
       return res.status(403).json({ message: 'Admin access required' });
     }
     const pendingTutors = await Tutor.find({ isApproved: false }).sort({ createdAt: -1 });
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.json(pendingTutors);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
