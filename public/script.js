@@ -48,9 +48,16 @@ function updateUINav() {
         const isActive = (view) => state.currentView === view ? 'active' : '';
         
         // Check if user is a tutor by looking for tutor data
-        const isTutor = state.tutors && state.tutors.some(t => 
-            t.email === state.user.email && t.isApproved !== false
-        );
+        console.log('updateUINav - state.tutors:', state.tutors);
+        console.log('updateUINav - state.user.email:', state.user.email);
+        
+        const isTutor = state.tutors && state.tutors.some(t => {
+            const matches = t.email === state.user.email && t.isApproved !== false;
+            console.log('Checking tutor:', t.email, 'vs user:', state.user.email, 'approved:', t.isApproved, 'matches:', matches);
+            return matches;
+        });
+        
+        console.log('updateUINav - isTutor:', isTutor);
         
         let buttons = `
             <button class="ui-nav-btn ${isActive('book')}" onclick="setView('book')">Book Session</button>
