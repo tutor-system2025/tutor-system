@@ -271,25 +271,26 @@ function bookingFormView() {
 
 // Become Tutor
 function becomeTutorView() {
+    // Get user's name from state
+    const [firstName, ...surnameArr] = state.user.username.split(' ');
+    const surname = surnameArr.join(' ') || '';
+    
     return `<h2>Become a Tutor</h2>
+        <div class="panel-section">
+            <h3>Your Information</h3>
+            <p><strong>Name:</strong> ${state.user.username}</p>
+            <p><strong>Email:</strong> ${state.user.email}</p>
+        </div>
         <form onsubmit="event.preventDefault(); submitTutorRequest()">
             <div class="input-group">
-                <label for="tutor-name">Name</label>
-                <input type="text" id="tutor-name" placeholder="Enter your full name" required />
-            </div>
-            <div class="input-group">
-                <label for="tutor-gmail">Gmail</label>
-                <input type="email" id="tutor-gmail" placeholder="Enter your Gmail address" required />
-            </div>
-            <div class="input-group">
                 <label for="tutor-subjects">Subjects to Teach</label>
-                <input type="text" id="tutor-subjects" placeholder="e.g. Math, Physics" required />
+                <input type="text" id="tutor-subjects" placeholder="e.g. Math, Physics, Chemistry" required />
             </div>
             <div class="input-group">
-                <label for="tutor-desc">Description (time, level, etc.)</label>
-                <textarea id="tutor-desc" placeholder="Describe your teaching experience and availability..." required></textarea>
+                <label for="tutor-desc">Description (teaching experience, availability, etc.)</label>
+                <textarea id="tutor-desc" placeholder="Describe your teaching experience, qualifications, availability, and what you can offer students..." required></textarea>
             </div>
-            <button class="btn" type="submit">Submit</button>
+            <button class="btn" type="submit">Submit Tutor Application</button>
         </form>`;
 }
 
@@ -1123,15 +1124,22 @@ async function submitBooking() {
 }
 
 async function submitTutorRequest() {
-    const name = document.getElementById('tutor-name').value;
-    const gmail = document.getElementById('tutor-gmail').value;
     const subjects = document.getElementById('tutor-subjects').value.split(',').map(s => s.trim());
     const desc = document.getElementById('tutor-desc').value;
-    const [firstName, ...surnameArr] = name.split(' ');
-    const surname = surnameArr.join(' ') || ' ';
+    
+    // Use user's existing information
+    const [firstName, ...surnameArr] = state.user.username.split(' ');
+    const surname = surnameArr.join(' ') || '';
+    
     try {
-        await API.becomeTutor({ firstName, surname, email: gmail, subjects, description: desc });
-        app.innerHTML = showSuccess('Tutor registration submitted! (Manager will be notified by email)');
+        await API.becomeTutor({ 
+            firstName, 
+            surname, 
+            email: state.user.email, 
+            subjects, 
+            description: desc 
+        });
+        app.innerHTML = showSuccess('Tutor application submitted! (Manager will be notified by email)');
         setView('book');
     } catch (e) {
         app.innerHTML = showError(e.message) + becomeTutorView();
