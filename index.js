@@ -433,6 +433,54 @@ app.put('/api/bookings/:id/accept', authenticateToken, async (req, res) => {
   }
 });
 
+// Send Message to Student (Tutor only)
+app.post('/api/bookings/:id/message', authenticateToken, async (req, res) => {
+  try {
+    const { studentEmail, subject, messageContent } = req.body;
+    
+    // Find the booking and ensure it belongs to the tutor
+    const booking = await Booking.findOne({ 
+      _id: req.params.id
+    }).populate('user', 'firstName surname email').populate('tutor', 'firstName surname email');
+    
+    if (!booking) {
+      return res.status(404).json({ message: 'Booking not found' });
+    }
+    
+    // Check if the current user is the tutor for this booking
+    const tutor = await Tutor.findOne({ email: req.user.email });
+    if (!tutor || booking.tutor._id.toString() !== tutor._id.toString()) {
+      return res.status(403).json({ message: 'You can only send messages for bookings assigned to you' });
+    }
+    
+    // Send message email to student
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: studentEmail,
+      subject: `Message from Tutor - ${subject}`,
+      html: `
+        <h2>Message from Your Tutor</h2>
+        <p>Dear ${booking.user.firstName} ${booking.user.surname},</p>
+        <p>You have received a message from your tutor ${booking.tutor.firstName} ${booking.tutor.surname} regarding your tutoring session.</p>
+        <p><strong>Session:</strong> ${subject}</p>
+        <p><strong>Message:</strong></p>
+        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #667eea;">
+          ${messageContent.replace(/\n/g, '<br>')}
+        </div>
+        <p>Please respond to this email if you need to communicate with your tutor.</p>
+        <p>Best regards,<br>Tutoring System</p>
+      `
+    };
+    
+    await transporter.sendMail(mailOptions);
+    
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.json({ message: 'Message sent successfully to student' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 // Manager Routes (Admin only)
 app.get('/api/admin/tutors', authenticateToken, async (req, res) => {
   try {

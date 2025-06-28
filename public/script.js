@@ -366,8 +366,8 @@ function tutorPanelView() {
         
         // Only show email button if we have an email
         const emailButton = userEmail ? 
-            `<a href="mailto:${userEmail}?subject=${emailSubject}&body=${emailBody}" class="btn btn-small" target="_blank">Email Student</a>` :
-            `<span class="btn btn-small disabled" title="No email available">Email Student</span>`;
+            `<button class="btn btn-small" onclick="openMessageModal('${b._id}', '${userName}', '${userEmail}', '${b.subject}')">Message Student</button>` :
+            `<span class="btn btn-small disabled" title="No email available">Message Student</span>`;
         
         return `<li class="booking-item">
             <div class="booking-info">
@@ -1016,6 +1016,18 @@ const API = {
         });
         if (!res.ok) throw new Error((await res.json()).message);
         return res.json();
+    },
+    async sendMessageToStudent(token, bookingId, studentEmail, subject, messageContent) {
+        const res = await fetch(`/api/bookings/${bookingId}/message`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ studentEmail, subject, messageContent })
+        });
+        if (!res.ok) throw new Error((await res.json()).message);
+        return res.json();
     }
 };
 
@@ -1403,4 +1415,69 @@ async function refreshTutorBookings() {
 }
 
 // Initial render
-render(); 
+render();
+
+// Message Modal Functions
+function openMessageModal(bookingId, studentName, studentEmail, subject) {
+    const modalHTML = `
+        <div id="messageModal" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Message Student</h3>
+                    <button class="modal-close" onclick="closeMessageModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p><strong>To:</strong> ${studentName} (${studentEmail})</p>
+                    <p><strong>Subject:</strong> ${subject}</p>
+                    <div class="input-group">
+                        <label for="message-content">Your Message:</label>
+                        <textarea id="message-content" placeholder="Write your message to the student..." rows="6" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closeMessageModal()">Cancel</button>
+                    <button class="btn" onclick="sendMessage('${bookingId}', '${studentEmail}', '${subject}')">Send Message</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Add modal to body
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    // Focus on message textarea
+    setTimeout(() => {
+        document.getElementById('message-content').focus();
+    }, 100);
+}
+
+function closeMessageModal() {
+    const modal = document.getElementById('messageModal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+async function sendMessage(bookingId, studentEmail, subject) {
+    const messageContent = document.getElementById('message-content').value.trim();
+    
+    if (!messageContent) {
+        alert('Please enter a message');
+        return;
+    }
+    
+    try {
+        await API.sendMessageToStudent(state.user.token, bookingId, studentEmail, subject, messageContent);
+        closeMessageModal();
+        app.innerHTML = showSuccess('Message sent successfully to student!');
+        setTimeout(() => {
+            render();
+        }, 2000);
+    } catch (error) {
+        console.error('Error sending message:', error);
+        app.innerHTML = showError('Failed to send message: ' + error.message);
+        setTimeout(() => {
+            render();
+        }, 3000);
+    }
+} 
