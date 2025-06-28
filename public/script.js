@@ -9,8 +9,10 @@ let state = {
     currentView: 'login',
     selectedSubject: null,
     selectedTutor: null,
+    selectedTutorObj: null,
     myBookings: [],
-    profile: null,
+    profile: {},
+    selectedBookingId: null
 };
 
 const app = document.getElementById('app');
@@ -92,6 +94,7 @@ function render() {
             case 'myBookings': content = myBookingsView(); break;
             case 'profile': content = profileView(); break;
             case 'manager': content = managerPanelView(); break;
+            case 'bookingDetail': content = bookingDetailView(state.selectedBookingId); break;
             default: content = bookView();
         }
     }
@@ -251,8 +254,21 @@ function myBookingsView() {
             timeDisplay = b.timePeriod;
         }
         
-        return `<li>${b.subject} with ${tutorName} at ${timeDisplay} - ${b.status || 'pending'}</li>`;
+        return `<li class="booking-item" onclick="viewBooking('${b._id}')">
+            <div class="booking-info">
+                <strong>${b.subject}</strong> with ${tutorName}<br>
+                <span class="booking-time">${timeDisplay}</span><br>
+                <span class="booking-status">Status: ${b.status || 'pending'}</span>
+            </div>
+            <div class="booking-actions">
+                <button class="btn btn-small" onclick="event.stopPropagation(); viewBooking('${b._id}')">View Details</button>
+            </div>
+        </li>`;
     }).join('');
+    
+    if (list === '') {
+        list = '<li><em>No bookings found.</em></li>';
+    }
     
     return `<h2>My Bookings</h2>
         <ul class="list">${list}</ul>`;
@@ -414,6 +430,75 @@ function managerPanelView() {
         </div>`;
 }
 
+// Booking Detail View
+function bookingDetailView(bookingId) {
+    const booking = state.myBookings.find(b => b._id === bookingId);
+    if (!booking) {
+        return `<h2>Booking Not Found</h2>
+            <button class="btn" onclick="setView('myBookings')">Back to My Bookings</button>`;
+    }
+    
+    // Handle populated tutor object
+    let tutorName = 'Unknown Tutor';
+    if (booking.tutor) {
+        if (typeof booking.tutor === 'string') {
+            tutorName = booking.tutor;
+        } else if (booking.tutor.firstName && booking.tutor.surname) {
+            tutorName = `${booking.tutor.firstName} ${booking.tutor.surname}`;
+        } else if (booking.tutor.name) {
+            tutorName = booking.tutor.name;
+        }
+    }
+    
+    // Format the date/time
+    let timeDisplay = 'No time specified';
+    let dateValue = '';
+    if (booking.date) {
+        const date = new Date(booking.date);
+        timeDisplay = date.toLocaleString();
+        dateValue = date.toISOString().slice(0, 16); // Format for datetime-local input
+    } else if (booking.timePeriod) {
+        timeDisplay = booking.timePeriod;
+    }
+    
+    return `<h2>Booking Details</h2>
+        <div class="booking-detail">
+            <div class="detail-section">
+                <h3>Booking Information</h3>
+                <p><strong>Subject:</strong> ${booking.subject}</p>
+                <p><strong>Tutor:</strong> ${tutorName}</p>
+                <p><strong>Status:</strong> ${booking.status || 'pending'}</p>
+                <p><strong>Current Time:</strong> ${timeDisplay}</p>
+                <p><strong>Description:</strong> ${booking.description || 'No description provided'}</p>
+            </div>
+            
+            <div class="detail-section">
+                <h3>Edit Booking</h3>
+                <form onsubmit="event.preventDefault(); updateBooking('${booking._id}')">
+                    <div class="input-group">
+                        <label for="edit-time">New Time</label>
+                        <input type="datetime-local" id="edit-time" value="${dateValue}" required />
+                    </div>
+                    <div class="input-group">
+                        <label for="edit-desc">New Description</label>
+                        <textarea id="edit-desc" placeholder="Describe what you need help with..." required>${booking.description || ''}</textarea>
+                    </div>
+                    <button class="btn" type="submit">Update Booking</button>
+                </form>
+            </div>
+            
+            <div class="detail-section">
+                <h3>Cancel Booking</h3>
+                <p>Are you sure you want to cancel this booking?</p>
+                <button class="btn btn-danger" onclick="cancelBooking('${booking._id}')">Cancel Booking</button>
+            </div>
+            
+            <div class="detail-section">
+                <button class="btn" onclick="setView('myBookings')">Back to My Bookings</button>
+            </div>
+        </div>`;
+}
+
 // --- API Helpers ---
 const API = {
     async login(email, password) {
@@ -571,6 +656,26 @@ const API = {
     },
     async removeTutor(token, tutorId) {
         const res = await fetch(`/api/admin/tutors/${tutorId}/remove`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error((await res.json()).message);
+        return res.json();
+    },
+    async updateBooking(token, bookingId, timePeriod, description, date) {
+        const res = await fetch(`/api/bookings/${bookingId}`, {
+            method: 'PUT',
+            headers: { 
+                'Content-Type': 'application/json', 
+                'Authorization': `Bearer ${token}` 
+            },
+            body: JSON.stringify({ timePeriod, description, date })
+        });
+        if (!res.ok) throw new Error((await res.json()).message);
+        return res.json();
+    },
+    async cancelBooking(token, bookingId) {
+        const res = await fetch(`/api/bookings/${bookingId}`, {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -858,6 +963,38 @@ async function removeTutor(tutorId) {
     } catch (e) {
         app.innerHTML = showError(e.message) + managerPanelView();
     }
+}
+
+async function updateBooking(bookingId) {
+    const time = document.getElementById('edit-time').value;
+    const desc = document.getElementById('edit-desc').value;
+    try {
+        await API.updateBooking(state.user.token, bookingId, time, desc, time);
+        app.innerHTML = showSuccess('Booking updated successfully!');
+        await fetchUserData();
+        setView('myBookings');
+    } catch (e) {
+        app.innerHTML = showError(e.message) + bookingDetailView(bookingId);
+    }
+}
+
+async function cancelBooking(bookingId) {
+    if (!confirm('Are you sure you want to cancel this booking? This action cannot be undone.')) {
+        return;
+    }
+    try {
+        await API.cancelBooking(state.user.token, bookingId);
+        app.innerHTML = showSuccess('Booking cancelled successfully!');
+        await fetchUserData();
+        setView('myBookings');
+    } catch (e) {
+        app.innerHTML = showError(e.message) + bookingDetailView(bookingId);
+    }
+}
+
+async function viewBooking(bookingId) {
+    state.selectedBookingId = bookingId;
+    setView('bookingDetail');
 }
 
 // Initial render

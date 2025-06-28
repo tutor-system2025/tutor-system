@@ -580,6 +580,72 @@
             width: auto;
             margin: 0;
         }
+        
+        /* Booking Management Styles */
+        .booking-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .booking-item:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .booking-info {
+            flex: 1;
+        }
+        
+        .booking-time {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .booking-status {
+            color: #667eea;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .booking-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .booking-detail {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .detail-section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid #e1e5e9;
+        }
+        
+        .detail-section h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f4ff;
+        }
+        
+        .detail-section p {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
     </style>
 </head>
 <body>

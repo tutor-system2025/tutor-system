@@ -274,6 +274,99 @@ app.get('/api/bookings/tutor', authenticateToken, async (req, res) => {
   }
 });
 
+// Update Booking (User only)
+app.put('/api/bookings/:id', authenticateToken, async (req, res) => {
+  try {
+    const { timePeriod, description, date } = req.body;
+    
+    // Find the booking and ensure it belongs to the user
+    const booking = await Booking.findOne({ 
+      _id: req.params.id, 
+      user: req.user.userId 
+    }).populate('tutor', 'firstName surname email');
+    
+    if (!booking) {
+      return res.status(404).json({ message: 'Booking not found' });
+    }
+    
+    // Update the booking
+    const updatedBooking = await Booking.findByIdAndUpdate(
+      req.params.id,
+      { 
+        timePeriod: timePeriod || booking.timePeriod,
+        description: description || booking.description,
+        date: date ? new Date(date) : booking.date
+      },
+      { new: true }
+    ).populate('tutor', 'firstName surname email');
+    
+    // Send email notification to tutor
+    const user = await User.findById(req.user.userId);
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: booking.tutor.email,
+      subject: 'Booking Updated',
+      html: `
+        <h2>Booking Update Notification</h2>
+        <p><strong>Student:</strong> ${user.firstName} ${user.surname}</p>
+        <p><strong>Subject:</strong> ${booking.subject}</p>
+        <p><strong>New Time Period:</strong> ${timePeriod || booking.timePeriod}</p>
+        <p><strong>New Date:</strong> ${date ? new Date(date).toLocaleDateString() : booking.date.toLocaleDateString()}</p>
+        <p><strong>New Description:</strong> ${description || booking.description}</p>
+        <p>The booking has been updated by the student.</p>
+      `
+    };
+    
+    await transporter.sendMail(mailOptions);
+    
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.json({ message: 'Booking updated successfully', booking: updatedBooking });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Cancel Booking (User only)
+app.delete('/api/bookings/:id', authenticateToken, async (req, res) => {
+  try {
+    // Find the booking and ensure it belongs to the user
+    const booking = await Booking.findOne({ 
+      _id: req.params.id, 
+      user: req.user.userId 
+    }).populate('tutor', 'firstName surname email');
+    
+    if (!booking) {
+      return res.status(404).json({ message: 'Booking not found' });
+    }
+    
+    // Delete the booking
+    await Booking.findByIdAndDelete(req.params.id);
+    
+    // Send email notification to tutor
+    const user = await User.findById(req.user.userId);
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: booking.tutor.email,
+      subject: 'Booking Cancelled',
+      html: `
+        <h2>Booking Cancellation Notification</h2>
+        <p><strong>Student:</strong> ${user.firstName} ${user.surname}</p>
+        <p><strong>Subject:</strong> ${booking.subject}</p>
+        <p><strong>Original Time:</strong> ${booking.timePeriod}</p>
+        <p><strong>Original Date:</strong> ${booking.date.toLocaleDateString()}</p>
+        <p>The booking has been cancelled by the student.</p>
+      `
+    };
+    
+    await transporter.sendMail(mailOptions);
+    
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.json({ message: 'Booking cancelled successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 // Manager Routes (Admin only)
 app.get('/api/admin/tutors', authenticateToken, async (req, res) => {
   try {
