@@ -229,7 +229,31 @@ function becomeTutorView() {
 
 // My Bookings
 function myBookingsView() {
-    let list = state.myBookings.map(b => `<li>${b.subject} with ${b.tutor} at ${b.time} - ${b.status}</li>`).join('');
+    let list = state.myBookings.map(b => {
+        // Handle populated tutor object
+        let tutorName = 'Unknown Tutor';
+        if (b.tutor) {
+            if (typeof b.tutor === 'string') {
+                tutorName = b.tutor;
+            } else if (b.tutor.firstName && b.tutor.surname) {
+                tutorName = `${b.tutor.firstName} ${b.tutor.surname}`;
+            } else if (b.tutor.name) {
+                tutorName = b.tutor.name;
+            }
+        }
+        
+        // Format the date/time
+        let timeDisplay = 'No time specified';
+        if (b.date) {
+            const date = new Date(b.date);
+            timeDisplay = date.toLocaleString();
+        } else if (b.timePeriod) {
+            timeDisplay = b.timePeriod;
+        }
+        
+        return `<li>${b.subject} with ${tutorName} at ${timeDisplay} - ${b.status || 'pending'}</li>`;
+    }).join('');
+    
     return `<h2>My Bookings</h2>
         <ul class="list">${list}</ul>`;
 }
@@ -268,7 +292,40 @@ function managerPanelView() {
     return `<h2>Manager Panel</h2>
         <div class="panel-section">
             <h3>All Bookings</h3>
-            <ul class="list">${state.bookings.map(b => `<li>${b.user} booked ${b.subject} with ${b.tutor} at ${b.time}</li>`).join('')}</ul>
+            <ul class="list">${state.bookings.map(b => {
+                // Handle populated user object
+                let userName = 'Unknown User';
+                if (b.user) {
+                    if (typeof b.user === 'string') {
+                        userName = b.user;
+                    } else if (b.user.firstName && b.user.surname) {
+                        userName = `${b.user.firstName} ${b.user.surname}`;
+                    }
+                }
+                
+                // Handle populated tutor object
+                let tutorName = 'Unknown Tutor';
+                if (b.tutor) {
+                    if (typeof b.tutor === 'string') {
+                        tutorName = b.tutor;
+                    } else if (b.tutor.firstName && b.tutor.surname) {
+                        tutorName = `${b.tutor.firstName} ${b.tutor.surname}`;
+                    } else if (b.tutor.name) {
+                        tutorName = b.tutor.name;
+                    }
+                }
+                
+                // Format the date/time
+                let timeDisplay = 'No time specified';
+                if (b.date) {
+                    const date = new Date(b.date);
+                    timeDisplay = date.toLocaleString();
+                } else if (b.timePeriod) {
+                    timeDisplay = b.timePeriod;
+                }
+                
+                return `<li>${userName} booked ${b.subject} with ${tutorName} at ${timeDisplay}</li>`;
+            }).join('')}</ul>
         </div>
         <div class="panel-section">
             <h3>Subjects</h3>
