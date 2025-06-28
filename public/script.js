@@ -551,11 +551,16 @@ async function fetchManagerData() {
 }
 
 async function selectSubject(subjectId) {
+    console.log('selectSubject called with subjectId:', subjectId);
+    console.log('Current view before selectSubject:', state.currentView);
+    
     state.selectedSubject = subjectId;
     const subject = state.subjects.find(s => s._id === subjectId);
     state.tutors = await API.getTutors(subject.name);
     state.selectedTutor = null;
     setView('chooseTutor');
+    
+    console.log('selectSubject completed, view changed to chooseTutor');
 }
 
 async function selectTutor(tutorId) {
@@ -637,6 +642,7 @@ async function assignTutor(tutorId) {
 
 async function assignMultipleSubjects(tutorId) {
     console.log('assignMultipleSubjects called with tutorId:', tutorId);
+    console.log('Current state.selectedSubject before API call:', state.selectedSubject);
     
     // Try different selector approaches
     const checkboxes = document.querySelectorAll(`input[id^="subject-${tutorId}-"]`);
@@ -668,6 +674,12 @@ async function assignMultipleSubjects(tutorId) {
         console.log('About to call fetchManagerData...');
         await fetchManagerData();
         console.log('fetchManagerData completed, about to call render...');
+        
+        // Clear any selected subject to prevent automatic navigation
+        state.selectedSubject = null;
+        state.selectedTutor = null;
+        state.selectedTutorObj = null;
+        
         render();
         console.log('render completed');
     } catch (e) {
