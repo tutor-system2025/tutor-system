@@ -136,6 +136,7 @@ function render() {
             case 'chooseTutor': content = chooseTutorView(); break;
             case 'bookingForm': content = bookingFormView(); break;
             case 'becomeTutor': content = becomeTutorView(); break;
+            case 'tutorPanel': content = tutorPanelView(); break;
             case 'myBookings': content = myBookingsView(); break;
             case 'profile': content = profileView(); break;
             case 'manager': content = managerPanelView(); break;
