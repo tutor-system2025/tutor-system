@@ -112,6 +112,9 @@ function setView(view) {
         case 'manager':
             app.innerHTML = managerPanelView();
             break;
+        case 'bookingDetail':
+            app.innerHTML = bookingDetailView(state.selectedBookingId);
+            break;
         default:
             app.innerHTML = bookView();
     }
