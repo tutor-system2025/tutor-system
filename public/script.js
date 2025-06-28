@@ -1469,7 +1469,7 @@ async function sendMessage(bookingId, studentEmail, subject) {
     try {
         await API.sendMessageToStudent(state.user.token, bookingId, studentEmail, subject, messageContent);
         closeMessageModal();
-        app.innerHTML = showSuccess('Message sent successfully to student!');
+        app.innerHTML = showSuccess('Message sent successfully to student and tutor!');
         setTimeout(() => {
             render();
         }, 2000);
