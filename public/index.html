@@ -265,8 +265,10 @@
         
         .tutor-actions {
             display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
+            flex-direction: column;
+            gap: 15px;
+            min-width: 250px;
+            align-items: flex-end;
         }
         
         .btn-small {
@@ -298,8 +300,18 @@
         .subject-assignment {
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            min-width: 200px;
+            gap: 12px;
+            min-width: 250px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e1e5e9;
+        }
+        
+        .subject-assignment label {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 5px;
         }
         
         .subject-checkboxes {
@@ -333,21 +345,24 @@
             justify-content: space-between;
             align-items: flex-start;
             flex-wrap: wrap;
-            gap: 15px;
-            padding: 20px;
+            gap: 20px;
+            padding: 25px;
             background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            margin-bottom: 15px;
+            border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            border-left: 5px solid #667eea;
         }
         
         .tutor-info {
             flex: 1;
-            min-width: 300px;
+            min-width: 350px;
+            max-width: 500px;
         }
         
         .tutor-info strong {
             color: #667eea;
+            font-weight: 600;
         }
         
         .panel-section {
