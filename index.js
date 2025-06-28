@@ -535,18 +535,25 @@ app.put('/api/admin/tutors/:id/approve', authenticateToken, async (req, res) => 
 
 app.get('/api/admin/bookings', authenticateToken, async (req, res) => {
   try {
+    console.log('getAllBookings called by user:', req.user.email, 'isAdmin:', req.user.isAdmin);
+    
     if (!req.user.isAdmin) {
+      console.log('Access denied: user is not admin');
       return res.status(403).json({ message: 'Admin access required' });
     }
     
+    console.log('Fetching all bookings from database...');
     const bookings = await Booking.find()
       .populate('user', 'firstName surname email')
       .populate('tutor', 'firstName surname email')
       .sort({ createdAt: -1 });
     
+    console.log('Bookings fetched successfully:', bookings.length, 'bookings found');
+    
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.json(bookings);
   } catch (error) {
+    console.error('Error in getAllBookings:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });

@@ -1074,14 +1074,37 @@ async function fetchUserData() {
 
 async function fetchManagerData() {
     console.log('fetchManagerData called');
-    state.subjects = await API.getAllSubjects(state.user.token);
-    console.log('Subjects fetched:', state.subjects.length);
-    state.tutors = await API.getAllTutors(state.user.token);
-    console.log('Tutors fetched:', state.tutors.length);
-    state.bookings = await API.getAllBookings(state.user.token);
-    console.log('Bookings fetched:', state.bookings.length);
-    state.tutorRequests = await API.getPendingTutors(state.user.token);
-    console.log('Tutor requests fetched:', state.tutorRequests.length);
+    try {
+        state.subjects = await API.getAllSubjects(state.user.token);
+        console.log('Subjects fetched:', state.subjects.length);
+    } catch (error) {
+        console.error('Error fetching subjects:', error);
+        throw new Error('Failed to fetch subjects: ' + error.message);
+    }
+    
+    try {
+        state.tutors = await API.getAllTutors(state.user.token);
+        console.log('Tutors fetched:', state.tutors.length);
+    } catch (error) {
+        console.error('Error fetching tutors:', error);
+        throw new Error('Failed to fetch tutors: ' + error.message);
+    }
+    
+    try {
+        state.bookings = await API.getAllBookings(state.user.token);
+        console.log('Bookings fetched:', state.bookings.length);
+    } catch (error) {
+        console.error('Error fetching bookings:', error);
+        throw new Error('Failed to fetch all bookings: ' + error.message);
+    }
+    
+    try {
+        state.tutorRequests = await API.getPendingTutors(state.user.token);
+        console.log('Tutor requests fetched:', state.tutorRequests.length);
+    } catch (error) {
+        console.error('Error fetching tutor requests:', error);
+        throw new Error('Failed to fetch tutor requests: ' + error.message);
+    }
 }
 
 async function selectSubject(subjectId) {
@@ -1182,11 +1205,19 @@ async function approveTutor(tutorId) {
             }
         }
         
+        console.log('About to fetch manager data after tutor approval...');
         await fetchManagerData();
+        console.log('Manager data fetched successfully, rendering...');
         render();
     } catch (e) {
-        console.error('Error approving tutor:', e);
-        app.innerHTML = showError(e.message) + managerPanelView();
+        console.error('Error in approveTutor:', e);
+        console.error('Error details:', {
+            message: e.message,
+            stack: e.stack,
+            tutorId: tutorId,
+            userToken: state.user.token ? 'Token exists' : 'No token'
+        });
+        app.innerHTML = showError('Error approving tutor: ' + e.message) + managerPanelView();
     }
 }
 
