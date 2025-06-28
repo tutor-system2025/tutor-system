@@ -47,12 +47,27 @@ function updateUINav() {
         uiNav.style.display = 'flex';
         const isActive = (view) => state.currentView === view ? 'active' : '';
         
+        // Check if user is a tutor by looking for tutor data
+        const isTutor = state.tutors && state.tutors.some(t => 
+            t.email === state.user.email && t.isApproved !== false
+        );
+        
         let buttons = `
             <button class="ui-nav-btn ${isActive('book')}" onclick="setView('book')">Book Session</button>
-            <button class="ui-nav-btn ${isActive('becomeTutor')}" onclick="setView('becomeTutor')">Become Tutor</button>
             <button class="ui-nav-btn ${isActive('myBookings')}" onclick="setView('myBookings')">My Bookings</button>
             <button class="ui-nav-btn ${isActive('profile')}" onclick="setView('profile')">Profile</button>
         `;
+        
+        if (isTutor) {
+            buttons = `
+                <button class="ui-nav-btn ${isActive('book')}" onclick="setView('book')">Book Session</button>
+                <button class="ui-nav-btn ${isActive('tutorPanel')}" onclick="setView('tutorPanel')">Tutor Panel</button>
+                <button class="ui-nav-btn ${isActive('myBookings')}" onclick="setView('myBookings')">My Bookings</button>
+                <button class="ui-nav-btn ${isActive('profile')}" onclick="setView('profile')">Profile</button>
+            `;
+        } else {
+            buttons += `<button class="ui-nav-btn ${isActive('becomeTutor')}" onclick="setView('becomeTutor')">Become Tutor</button>`;
+        }
         
         if (state.user.isManager) {
             buttons += `<button class="ui-nav-btn ${isActive('manager')}" onclick="setView('manager')">Manager Panel</button>`;
@@ -78,6 +93,9 @@ function setView(view) {
             break;
         case 'becomeTutor':
             app.innerHTML = becomeTutorView();
+            break;
+        case 'tutorPanel':
+            app.innerHTML = tutorPanelView();
             break;
         case 'myBookings':
             app.innerHTML = myBookingsView();
@@ -258,6 +276,89 @@ function becomeTutorView() {
         </form>`;
 }
 
+// Tutor Panel
+function tutorPanelView() {
+    // Get the current tutor's information
+    const currentTutor = state.tutors.find(t => t.email === state.user.email);
+    if (!currentTutor) {
+        return `<h2>Tutor Panel</h2>
+            <div class="error">Tutor information not found. Please contact support.</div>`;
+    }
+    
+    // Get bookings where this tutor is the tutor (not the student)
+    const tutorBookings = state.myBookings.filter(b => {
+        // Check if the booking's tutor matches the current tutor
+        if (b.tutor) {
+            if (typeof b.tutor === 'string') {
+                return b.tutor === currentTutor._id;
+            } else if (b.tutor._id) {
+                return b.tutor._id === currentTutor._id;
+            }
+        }
+        return false;
+    });
+    
+    let bookingsList = tutorBookings.map(b => {
+        // Handle populated user object
+        let userName = 'Unknown User';
+        let userEmail = '';
+        if (b.user) {
+            if (typeof b.user === 'string') {
+                userName = b.user;
+            } else if (b.user.firstName && b.user.surname) {
+                userName = `${b.user.firstName} ${b.user.surname}`;
+                userEmail = b.user.email || '';
+            }
+        }
+        
+        // Format the date/time
+        let timeDisplay = 'No time specified';
+        if (b.date) {
+            const date = new Date(b.date);
+            timeDisplay = date.toLocaleString();
+        } else if (b.timePeriod) {
+            timeDisplay = b.timePeriod;
+        }
+        
+        const emailSubject = encodeURIComponent(`Tutoring Session - ${b.subject} - ${timeDisplay}`);
+        const emailBody = encodeURIComponent(`Hi ${userName},\n\nRegarding our tutoring session:\n\nSubject: ${b.subject}\nTime: ${timeDisplay}\nDescription: ${b.description || 'No description provided'}\n\nBest regards,\n${state.user.username}`);
+        
+        return `<li class="booking-item">
+            <div class="booking-info">
+                <strong>${b.subject}</strong> with ${userName}<br>
+                <span class="booking-time">${timeDisplay}</span><br>
+                <span class="booking-status">Status: ${b.status || 'pending'}</span><br>
+                <span class="booking-description">${b.description || 'No description provided'}</span>
+            </div>
+            <div class="booking-actions">
+                <a href="mailto:${userEmail}?subject=${emailSubject}&body=${emailBody}" class="btn btn-small" target="_blank">Email Student</a>
+                ${b.status !== 'accepted' ? `<button class="btn btn-small btn-success" onclick="acceptBooking('${b._id}')">Accept Booking</button>` : '<span class="accepted-badge">✓ Accepted</span>'}
+            </div>
+        </li>`;
+    }).join('');
+    
+    if (bookingsList === '') {
+        bookingsList = '<li><em>No booking requests found for you yet.</em></li>';
+    }
+    
+    return `<h2>Tutor Panel</h2>
+        <div class="panel-section">
+            <h3>Tutor Information</h3>
+            <p><strong>Name:</strong> ${currentTutor.firstName} ${currentTutor.surname}</p>
+            <p><strong>Email:</strong> ${currentTutor.email}</p>
+            <p><strong>Subjects:</strong> ${Array.isArray(currentTutor.subjects) ? currentTutor.subjects.join(', ') : currentTutor.subjects}</p>
+            <p><strong>Description:</strong> ${currentTutor.description || currentTutor.bio || 'No description provided'}</p>
+        </div>
+        <div class="panel-section">
+            <h3>Booking Requests (You as Tutor)</h3>
+            <p class="info-text">These are sessions where students have requested you as their tutor.</p>
+            <div style="text-align: right; margin-bottom: 20px;">
+                <button class="btn btn-small" onclick="refreshTutorBookings()">Refresh</button>
+            </div>
+            <ul class="list">${bookingsList}</ul>
+        </div>`;
+}
+
 // My Bookings
 function myBookingsView() {
     // Check if we're currently loading data
@@ -268,7 +369,38 @@ function myBookingsView() {
             </div>`;
     }
     
-    let list = state.myBookings.map(b => {
+    // Check if user is a tutor
+    const isTutor = state.tutors && state.tutors.some(t => 
+        t.email === state.user.email && t.isApproved !== false
+    );
+    
+    // Separate bookings where user is student vs tutor
+    const studentBookings = state.myBookings.filter(b => {
+        // User is the student (booking.user matches current user)
+        if (b.user) {
+            if (typeof b.user === 'string') {
+                return b.user === state.user.userId;
+            } else if (b.user._id) {
+                return b.user._id === state.user.userId;
+            }
+        }
+        return false;
+    });
+    
+    const tutorBookings = isTutor ? state.myBookings.filter(b => {
+        // User is the tutor (booking.tutor matches current tutor)
+        const currentTutor = state.tutors.find(t => t.email === state.user.email);
+        if (b.tutor && currentTutor) {
+            if (typeof b.tutor === 'string') {
+                return b.tutor === currentTutor._id;
+            } else if (b.tutor._id) {
+                return b.tutor._id === currentTutor._id;
+            }
+        }
+        return false;
+    }) : [];
+    
+    let studentList = studentBookings.map(b => {
         // Handle populated tutor object
         let tutorName = 'Unknown Tutor';
         if (b.tutor) {
@@ -302,15 +434,68 @@ function myBookingsView() {
         </li>`;
     }).join('');
     
-    if (list === '') {
-        list = '<li><em>No bookings found.</em></li>';
+    let tutorList = tutorBookings.map(b => {
+        // Handle populated user object
+        let userName = 'Unknown User';
+        if (b.user) {
+            if (typeof b.user === 'string') {
+                userName = b.user;
+            } else if (b.user.firstName && b.user.surname) {
+                userName = `${b.user.firstName} ${b.user.surname}`;
+            }
+        }
+        
+        // Format the date/time
+        let timeDisplay = 'No time specified';
+        if (b.date) {
+            const date = new Date(b.date);
+            timeDisplay = date.toLocaleString();
+        } else if (b.timePeriod) {
+            timeDisplay = b.timePeriod;
+        }
+        
+        return `<li class="booking-item">
+            <div class="booking-info">
+                <strong>${b.subject}</strong> with ${userName}<br>
+                <span class="booking-time">${timeDisplay}</span><br>
+                <span class="booking-status">Status: ${b.status || 'pending'}</span>
+            </div>
+            <div class="booking-actions">
+                <span class="tutor-badge">You as Tutor</span>
+            </div>
+        </li>`;
+    }).join('');
+    
+    if (studentList === '') {
+        studentList = '<li><em>No bookings found where you are the student.</em></li>';
     }
     
-    return `<h2>My Bookings</h2>
+    if (tutorList === '') {
+        tutorList = '<li><em>No bookings found where you are the tutor.</em></li>';
+    }
+    
+    let content = `<h2>My Bookings</h2>
         <div style="text-align: right; margin-bottom: 20px;">
             <button class="btn btn-small" onclick="refreshBookings()">Refresh</button>
-        </div>
-        <ul class="list">${list}</ul>`;
+        </div>`;
+    
+    // Show student bookings
+    content += `<div class="panel-section">
+        <h3>My Sessions (You as Student)</h3>
+        <p class="info-text">These are sessions where you booked a tutor.</p>
+        <ul class="list">${studentList}</ul>
+    </div>`;
+    
+    // Show tutor bookings if user is a tutor
+    if (isTutor) {
+        content += `<div class="panel-section">
+            <h3>My Teaching Sessions (You as Tutor)</h3>
+            <p class="info-text">These are sessions where you are the tutor. Manage them in the Tutor Panel.</p>
+            <ul class="list">${tutorList}</ul>
+        </div>`;
+    }
+    
+    return content;
 }
 
 // Profile
@@ -724,6 +909,14 @@ const API = {
         });
         if (!res.ok) throw new Error((await res.json()).message);
         return res.json();
+    },
+    async acceptBooking(token, bookingId) {
+        const res = await fetch(`/api/bookings/${bookingId}/accept`, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error((await res.json()).message);
+        return res.json();
     }
 };
 
@@ -1054,6 +1247,37 @@ async function refreshBookings() {
         state.loading = false;
         render();
         console.error('Error refreshing bookings:', error);
+    }
+}
+
+async function acceptBooking(bookingId) {
+    if (!confirm('Are you sure you want to accept this booking?')) {
+        return;
+    }
+    try {
+        await API.acceptBooking(state.user.token, bookingId);
+        app.innerHTML = showSuccess('Booking accepted successfully! Email notification sent to student.');
+        await fetchUserData();
+        setView('tutorPanel');
+    } catch (e) {
+        app.innerHTML = showError(e.message) + tutorPanelView();
+    }
+}
+
+async function refreshTutorBookings() {
+    if (!state.user) return;
+    
+    state.loading = true;
+    render(); // Show loading state immediately
+    
+    try {
+        await fetchUserData();
+        state.loading = false;
+        render();
+    } catch (error) {
+        state.loading = false;
+        render();
+        console.error('Error refreshing tutor bookings:', error);
     }
 }
 

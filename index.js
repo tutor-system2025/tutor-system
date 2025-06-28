@@ -378,6 +378,61 @@ app.delete('/api/bookings/:id', authenticateToken, async (req, res) => {
   }
 });
 
+// Accept Booking (Tutor only)
+app.put('/api/bookings/:id/accept', authenticateToken, async (req, res) => {
+  try {
+    // Find the booking and ensure it belongs to the tutor
+    const booking = await Booking.findOne({ 
+      _id: req.params.id
+    }).populate('user', 'firstName surname email').populate('tutor', 'firstName surname email');
+    
+    if (!booking) {
+      return res.status(404).json({ message: 'Booking not found' });
+    }
+    
+    // Check if the current user is the tutor for this booking
+    const tutor = await Tutor.findOne({ email: req.user.email });
+    if (!tutor || booking.tutor._id.toString() !== tutor._id.toString()) {
+      return res.status(403).json({ message: 'You can only accept bookings assigned to you' });
+    }
+    
+    // Update the booking status to accepted
+    const updatedBooking = await Booking.findByIdAndUpdate(
+      req.params.id,
+      { status: 'accepted' },
+      { new: true }
+    ).populate('user', 'firstName surname email').populate('tutor', 'firstName surname email');
+    
+    // Send acceptance email to student
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: booking.user.email,
+      subject: 'Booking Accepted - Tutoring Session Confirmed',
+      html: `
+        <h2>Booking Accepted!</h2>
+        <p>Dear ${booking.user.firstName} ${booking.user.surname},</p>
+        <p>Great news! Your tutoring session has been accepted by ${booking.tutor.firstName} ${booking.tutor.surname}.</p>
+        <p><strong>Session Details:</strong></p>
+        <ul>
+          <li><strong>Subject:</strong> ${booking.subject}</li>
+          <li><strong>Time:</strong> ${booking.timePeriod}</li>
+          <li><strong>Date:</strong> ${booking.date.toLocaleDateString()}</li>
+          <li><strong>Description:</strong> ${booking.description || 'No description provided'}</li>
+        </ul>
+        <p>Your tutor will contact you soon to confirm the final arrangements.</p>
+        <p>Best regards,<br>Tutoring System</p>
+      `
+    };
+    
+    await transporter.sendMail(mailOptions);
+    
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.json({ message: 'Booking accepted successfully', booking: updatedBooking });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 // Manager Routes (Admin only)
 app.get('/api/admin/tutors', authenticateToken, async (req, res) => {
   try {
