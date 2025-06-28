@@ -74,10 +74,10 @@ function setView(view) {
             app.innerHTML = registerView();
             break;
         case 'book':
-            app.innerHTML = bookingView();
+            app.innerHTML = bookView();
             break;
         case 'becomeTutor':
-            app.innerHTML = tutorRegistrationView();
+            app.innerHTML = becomeTutorView();
             break;
         case 'myBookings':
             app.innerHTML = myBookingsView();
@@ -86,10 +86,10 @@ function setView(view) {
             app.innerHTML = profileView();
             break;
         case 'manager':
-            app.innerHTML = managerView();
+            app.innerHTML = managerPanelView();
             break;
         default:
-            app.innerHTML = bookingView();
+            app.innerHTML = bookView();
     }
 }
 
