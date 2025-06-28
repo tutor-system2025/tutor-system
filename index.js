@@ -164,6 +164,17 @@ app.get('/api/tutors/:subject', async (req, res) => {
   }
 });
 
+// Get All Approved Tutors (for regular users)
+app.get('/api/tutors', async (req, res) => {
+  try {
+    const tutors = await Tutor.find({ isApproved: true }).select('-description');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.json(tutors);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 // Tutor Registration
 app.post('/api/tutor/register', async (req, res) => {
   try {

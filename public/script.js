@@ -568,9 +568,11 @@ const API = {
         return (await res.json()).subjects;
     },
     async getTutors(subject) {
-        const res = await fetch(`/api/tutors/${encodeURIComponent(subject)}`);
+        const url = subject ? `/api/tutors/${encodeURIComponent(subject)}` : '/api/tutors';
+        const res = await fetch(url);
         if (!res.ok) throw new Error('Failed to fetch tutors');
-        return (await res.json()).tutors;
+        const data = await res.json();
+        return subject ? data.tutors : data; // Return tutors array directly if no subject
     },
     async bookSession(token, tutorId, subject, timePeriod, description, date) {
         const res = await fetch('/api/bookings', {
@@ -777,7 +779,7 @@ function logout() {
 async function fetchUserData() {
     state.subjects = await API.getSubjects();
     // Fetch all approved tutors for booking sessions
-    state.tutors = await API.getAllTutors(state.user.token);
+    state.tutors = await API.getTutors();
     state.myBookings = await API.getMyBookings(state.user.token);
     state.profile = { email: state.user.email, username: state.user.username };
 }
