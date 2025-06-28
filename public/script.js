@@ -1319,10 +1319,10 @@ async function refreshTutorBookings() {
     try {
         await fetchUserData();
         state.loading = false;
-        render();
+        setView('tutorPanel'); // Stay on tutor panel instead of calling render()
     } catch (error) {
         state.loading = false;
-        render();
+        setView('tutorPanel'); // Stay on tutor panel even on error
         console.error('Error refreshing tutor bookings:', error);
     }
 }
