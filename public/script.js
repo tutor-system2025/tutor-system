@@ -76,25 +76,28 @@ function navBar() {
 }
 
 function render() {
-    updateTopNav(); // Update top navigation first
-    updateUINav(); // Update UI navigation second
+    console.log('Render called, current view:', state.currentView);
+    updateTopNav();
+    updateUINav();
     
-    let html = '';
+    let content = '';
     if (!state.user) {
-        html = state.currentView === 'register' ? registerView() : loginView();
+        content = state.currentView === 'register' ? registerView() : loginView();
     } else {
         switch (state.currentView) {
-            case 'book': html = bookView(); break;
-            case 'chooseTutor': html = chooseTutorView(); break;
-            case 'bookingForm': html = bookingFormView(); break;
-            case 'becomeTutor': html = becomeTutorView(); break;
-            case 'myBookings': html = myBookingsView(); break;
-            case 'profile': html = profileView(); break;
-            case 'manager': html = managerPanelView(); break;
-            default: html = bookView(); break;
+            case 'book': content = bookView(); break;
+            case 'chooseTutor': content = chooseTutorView(); break;
+            case 'bookingForm': content = bookingFormView(); break;
+            case 'becomeTutor': content = becomeTutorView(); break;
+            case 'myBookings': content = myBookingsView(); break;
+            case 'profile': content = profileView(); break;
+            case 'manager': content = managerPanelView(); break;
+            default: content = bookView();
         }
     }
-    app.innerHTML = html;
+    
+    app.innerHTML = navBar() + content;
+    console.log('Render completed');
 }
 
 // Login/Register
@@ -285,7 +288,7 @@ function managerPanelView() {
             <ul class="list">${state.tutors.map(t => {
                 const tutorName = t.name || (t.firstName && t.surname ? `${t.firstName} ${t.surname}` : 'Unknown Tutor');
                 const currentSubjects = Array.isArray(t.subjects) ? t.subjects.join(', ') : t.subjects || 'No subjects assigned';
-                return `<li class="tutor-item">
+                return `<li class="tutor-item" data-tutor-id="${t._id}">
                     <div class="tutor-info">
                         <strong>${tutorName}</strong> (${t.email})<br>
                         <strong>Current Subjects:</strong> ${currentSubjects}<br>
@@ -536,10 +539,15 @@ async function fetchUserData() {
 }
 
 async function fetchManagerData() {
+    console.log('fetchManagerData called');
     state.subjects = await API.getAllSubjects(state.user.token);
+    console.log('Subjects fetched:', state.subjects.length);
     state.tutors = await API.getAllTutors(state.user.token);
+    console.log('Tutors fetched:', state.tutors.length);
     state.bookings = await API.getAllBookings(state.user.token);
+    console.log('Bookings fetched:', state.bookings.length);
     state.tutorRequests = await API.getPendingTutors(state.user.token);
+    console.log('Tutor requests fetched:', state.tutorRequests.length);
 }
 
 async function selectSubject(subjectId) {
@@ -629,19 +637,39 @@ async function assignTutor(tutorId) {
 
 async function assignMultipleSubjects(tutorId) {
     console.log('assignMultipleSubjects called with tutorId:', tutorId);
+    
+    // Try different selector approaches
     const checkboxes = document.querySelectorAll(`input[id^="subject-${tutorId}-"]`);
-    console.log('Found checkboxes:', checkboxes.length);
+    console.log('Found checkboxes with prefix selector:', checkboxes.length);
+    
+    if (checkboxes.length === 0) {
+        // Fallback: try to find all checkboxes in the current tutor item
+        const tutorItem = document.querySelector(`[data-tutor-id="${tutorId}"]`);
+        if (tutorItem) {
+            const fallbackCheckboxes = tutorItem.querySelectorAll('input[type="checkbox"]');
+            console.log('Found checkboxes with fallback selector:', fallbackCheckboxes.length);
+        }
+    }
+    
     const selectedSubjects = Array.from(checkboxes)
         .filter(cb => cb.checked)
         .map(cb => cb.value);
     console.log('Selected subjects:', selectedSubjects);
     
+    if (selectedSubjects.length === 0) {
+        console.log('No subjects selected, but continuing...');
+    }
+    
     try {
-        console.log('Calling API with token:', state.user.token);
+        console.log('Calling API with token:', state.user.token ? 'Token exists' : 'No token');
+        console.log('API call parameters:', { tutorId, selectedSubjects });
         await API.assignMultipleSubjects(state.user.token, tutorId, selectedSubjects);
         console.log('API call successful');
+        console.log('About to call fetchManagerData...');
         await fetchManagerData();
+        console.log('fetchManagerData completed, about to call render...');
         render();
+        console.log('render completed');
     } catch (e) {
         console.error('Error in assignMultipleSubjects:', e);
         app.innerHTML = showError(e.message) + managerPanelView();
