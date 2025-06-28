@@ -354,25 +354,17 @@ function tutorPanelView() {
         const completeButton = b.status === 'accepted' ? 
             `<button class="btn btn-small btn-success" onclick="openCompleteSessionModal('${b._id}', '${b.subject}', '${userName}')">Complete Session</button>` : '';
         
-        // Temporary: Add complete session button for all bookings for testing
-        const tempCompleteButton = `<button class="btn btn-small btn-warning" onclick="openCompleteSessionModal('${b._id}', '${b.subject}', '${userName}')">Complete Session (Test)</button>`;
-        
-        // Add debugging info
-        const debugInfo = `<small style="color: #666; font-style: italic;">Debug: Status = "${b.status || 'undefined'}"</small>`;
-        
         return `<li class="booking-item">
             <div class="booking-info">
                 <strong>${b.subject}</strong> with ${userName}<br>
                 <span class="booking-time">${timeDisplay}</span><br>
                 <span class="booking-status">Status: ${b.status || 'pending'}</span><br>
                 <span class="booking-description">${b.description || 'No description provided'}</span>
-                ${debugInfo}
             </div>
             <div class="booking-actions">
                 ${emailButton}
                 ${b.status !== 'accepted' ? `<button class="btn btn-small btn-success" onclick="acceptBooking('${b._id}')">Accept Booking</button>` : '<span class="accepted-badge">✓ Accepted</span>'}
                 ${completeButton}
-                ${tempCompleteButton}
             </div>
         </li>`;
     }).join('');
