@@ -93,6 +93,7 @@ app.post('/api/register', async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = new User({ firstName, surname, email, password: hashedPassword });
     await user.save();
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.status(201).json({ message: 'User registered successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
@@ -112,6 +113,7 @@ app.post('/api/login', async (req, res) => {
       JWT_SECRET,
       { expiresIn: '24h' }
     );
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.json({
       token,
       user: {
@@ -137,6 +139,7 @@ app.get('/api/subjects', async (req, res) => {
       Subject.find().skip(skip).limit(limit),
       Subject.countDocuments()
     ]);
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.json({ subjects, total });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
@@ -154,6 +157,7 @@ app.get('/api/tutors/:subject', async (req, res) => {
       Tutor.find({ subjects: subject, isApproved: true }).skip(skip).limit(limit).select('-description'),
       Tutor.countDocuments({ subjects: subject, isApproved: true })
     ]);
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.json({ tutors, total });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
