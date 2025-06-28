@@ -307,28 +307,8 @@ function tutorPanelView() {
     }
     
     // Get bookings where this tutor is the tutor (not the student)
-    const tutorBookings = state.myBookings.filter(b => {
-        // Check if the booking's tutor matches the current tutor
-        console.log('Checking booking:', b);
-        console.log('Booking tutor:', b.tutor);
-        console.log('Current tutor ID:', currentTutor._id);
-        
-        if (b.tutor) {
-            if (typeof b.tutor === 'string') {
-                const matches = b.tutor === currentTutor._id;
-                console.log('String comparison:', b.tutor, '===', currentTutor._id, '=', matches);
-                return matches;
-            } else if (b.tutor._id) {
-                const matches = b.tutor._id === currentTutor._id;
-                console.log('Object comparison:', b.tutor._id, '===', currentTutor._id, '=', matches);
-                return matches;
-            }
-        }
-        console.log('No tutor match found');
-        return false;
-    });
-    
-    console.log('Tutor Panel - filtered tutorBookings:', tutorBookings);
+    const tutorBookings = state.tutorBookings || [];
+    console.log('Tutor Panel - tutorBookings from separate array:', tutorBookings);
     
     let bookingsList = tutorBookings.map(b => {
         // Handle populated user object
@@ -468,31 +448,9 @@ function myBookingsView() {
     }
     
     // Tutor user - show separated booking lists
-    // Separate bookings where user is student vs tutor
-    const studentBookings = state.myBookings.filter(b => {
-        // User is the student (booking.user matches current user)
-        if (b.user) {
-            if (typeof b.user === 'string') {
-                return b.user === state.user.userId;
-            } else if (b.user._id) {
-                return b.user._id === state.user.userId;
-            }
-        }
-        return false;
-    });
-    
-    const tutorBookings = state.myBookings.filter(b => {
-        // User is the tutor (booking.tutor matches current tutor)
-        const currentTutor = state.tutors.find(t => t.email === state.user.email);
-        if (b.tutor && currentTutor) {
-            if (typeof b.tutor === 'string') {
-                return b.tutor === currentTutor._id;
-            } else if (b.tutor._id) {
-                return b.tutor._id === currentTutor._id;
-            }
-        }
-        return false;
-    });
+    // Use separate arrays instead of filtering
+    const studentBookings = state.myBookings; // These are bookings where user is the student
+    const tutorBookings = state.tutorBookings || []; // These are bookings where user is the tutor
     
     let studentList = studentBookings.map(b => {
         // Handle populated tutor object
@@ -1099,12 +1057,15 @@ async function fetchUserData() {
         try {
             const tutorBookings = await API.getTutorBookings(state.user.token);
             console.log('fetchUserData - tutorBookings from API:', tutorBookings);
-            // Combine user bookings (as student) with tutor bookings (as tutor)
-            state.myBookings = [...state.myBookings, ...tutorBookings];
-            console.log('fetchUserData - Combined myBookings:', state.myBookings);
+            // Keep tutor bookings separate instead of combining them
+            state.tutorBookings = tutorBookings;
+            console.log('fetchUserData - Separate tutorBookings:', state.tutorBookings);
         } catch (error) {
             console.error('Error fetching tutor bookings:', error);
+            state.tutorBookings = [];
         }
+    } else {
+        state.tutorBookings = [];
     }
     
     state.profile = { email: state.user.email, username: state.user.username };
