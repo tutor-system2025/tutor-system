@@ -47,31 +47,15 @@ function updateUINav() {
         uiNav.style.display = 'flex';
         const isActive = (view) => state.currentView === view ? 'active' : '';
         
-        let buttons = '';
+        let buttons = `
+            <button class="ui-nav-btn ${isActive('book')}" onclick="setView('book')">Book Session</button>
+            <button class="ui-nav-btn ${isActive('becomeTutor')}" onclick="setView('becomeTutor')">Become Tutor</button>
+            <button class="ui-nav-btn ${isActive('myBookings')}" onclick="setView('myBookings')">My Bookings</button>
+            <button class="ui-nav-btn ${isActive('profile')}" onclick="setView('profile')">Profile</button>
+        `;
         
-        if (state.user.isTutor) {
-            // Tutor navigation
-            buttons = `
-                <button class="ui-nav-btn ${isActive('tutorDashboard')}" onclick="setView('tutorDashboard')">My Dashboard</button>
-                <button class="ui-nav-btn ${isActive('profile')}" onclick="setView('profile')">Profile</button>
-            `;
-        } else if (state.user.isManager) {
-            // Manager navigation
-            buttons = `
-                <button class="ui-nav-btn ${isActive('book')}" onclick="setView('book')">Book Session</button>
-                <button class="ui-nav-btn ${isActive('becomeTutor')}" onclick="setView('becomeTutor')">Become Tutor</button>
-                <button class="ui-nav-btn ${isActive('myBookings')}" onclick="setView('myBookings')">My Bookings</button>
-                <button class="ui-nav-btn ${isActive('profile')}" onclick="setView('profile')">Profile</button>
-                <button class="ui-nav-btn ${isActive('manager')}" onclick="setView('manager')">Manager Panel</button>
-            `;
-        } else {
-            // Regular user navigation
-            buttons = `
-                <button class="ui-nav-btn ${isActive('book')}" onclick="setView('book')">Book Session</button>
-                <button class="ui-nav-btn ${isActive('becomeTutor')}" onclick="setView('becomeTutor')">Become Tutor</button>
-                <button class="ui-nav-btn ${isActive('myBookings')}" onclick="setView('myBookings')">My Bookings</button>
-                <button class="ui-nav-btn ${isActive('profile')}" onclick="setView('profile')">Profile</button>
-            `;
+        if (state.user.isManager) {
+            buttons += `<button class="ui-nav-btn ${isActive('manager')}" onclick="setView('manager')">Manager Panel</button>`;
         }
         
         uiNavButtons.innerHTML = buttons;
@@ -80,40 +64,32 @@ function updateUINav() {
 
 function setView(view) {
     state.currentView = view;
+    updateUINav();
     
-    // Fetch fresh data for specific views
-    if (view === 'myBookings' && state.user) {
-        state.loading = true;
-        render(); // Show loading state immediately
-        fetchUserData().then(() => {
-            state.loading = false;
-            render();
-        }).catch(() => {
-            state.loading = false;
-            render();
-        });
-    } else if (view === 'tutorDashboard' && state.user && state.user.isTutor) {
-        state.loading = true;
-        render(); // Show loading state immediately
-        fetchTutorData().then(() => {
-            state.loading = false;
-            render();
-        }).catch(() => {
-            state.loading = false;
-            render();
-        });
-    } else if (view === 'manager' && state.user && state.user.isManager) {
-        state.loading = true;
-        render(); // Show loading state immediately
-        fetchManagerData().then(() => {
-            state.loading = false;
-            render();
-        }).catch(() => {
-            state.loading = false;
-            render();
-        });
-    } else {
-        render();
+    switch (view) {
+        case 'login':
+            app.innerHTML = loginView();
+            break;
+        case 'register':
+            app.innerHTML = registerView();
+            break;
+        case 'book':
+            app.innerHTML = bookingView();
+            break;
+        case 'becomeTutor':
+            app.innerHTML = tutorRegistrationView();
+            break;
+        case 'myBookings':
+            app.innerHTML = myBookingsView();
+            break;
+        case 'profile':
+            app.innerHTML = profileView();
+            break;
+        case 'manager':
+            app.innerHTML = managerView();
+            break;
+        default:
+            app.innerHTML = bookingView();
     }
 }
 
@@ -562,104 +538,7 @@ function bookingDetailView(bookingId) {
         </div>`;
 }
 
-// Tutor Dashboard
-function tutorDashboardView() {
-    return `<h2>Tutor Dashboard</h2>
-        <div class="panel-section">
-            <h3>Tutor Information</h3>
-            <p><strong>Name:</strong> ${state.user.username}</p>
-            <p><strong>Email:</strong> ${state.user.email}</p>
-        </div>
-        <div class="panel-section">
-            <h3>Tutor Bookings</h3>
-            <ul class="list">${state.bookings.map(b => {
-                // Handle populated user object
-                let userName = 'Unknown User';
-                if (b.user) {
-                    if (typeof b.user === 'string') {
-                        userName = b.user;
-                    } else if (b.user.firstName && b.user.surname) {
-                        userName = `${b.user.firstName} ${b.user.surname}`;
-                    }
-                }
-                
-                // Handle populated tutor object
-                let tutorName = 'Unknown Tutor';
-                if (b.tutor) {
-                    if (typeof b.tutor === 'string') {
-                        tutorName = b.tutor;
-                    } else if (b.tutor.firstName && b.tutor.surname) {
-                        tutorName = `${b.tutor.firstName} ${b.tutor.surname}`;
-                    } else if (b.tutor.name) {
-                        tutorName = b.tutor.name;
-                    }
-                }
-                
-                // Format the date/time
-                let timeDisplay = 'No time specified';
-                if (b.date) {
-                    const date = new Date(b.date);
-                    timeDisplay = date.toLocaleString();
-                } else if (b.timePeriod) {
-                    timeDisplay = b.timePeriod;
-                }
-                
-                return `<li>${userName} booked ${b.subject} with ${tutorName} at ${timeDisplay}</li>`;
-            }).join('')}</ul>
-        </div>
-        <div class="panel-section">
-            <h3>Tutor Subjects</h3>
-            <ul class="list">${state.subjects.map(s => `<li class="subject-item">
-                <span>${s.name}</span>
-                <button class="btn btn-small btn-danger" onclick="removeSubject('${s._id}')">Remove</button>
-            </li>`).join('')}</ul>
-            <form onsubmit="event.preventDefault(); addSubject()">
-                <div class="form-row">
-                    <div class="input-group">
-                        <input type="text" id="new-subject" placeholder="New subject" required />
-                    </div>
-                    <button class="btn btn-small" type="submit">Add Subject</button>
-                </div>
-            </form>
-        </div>
-        <div class="panel-section">
-            <h3>Tutor Requests</h3>
-            <ul class="list">${state.tutorRequests.map(r => {
-                const tutorName = r.name || (r.firstName && r.surname ? `${r.firstName} ${r.surname}` : 'Unknown Tutor');
-                const subjects = Array.isArray(r.subjects) ? r.subjects.join(', ') : r.subjects;
-                return `<li class="tutor-item">
-                    <div class="tutor-info">
-                        <strong>${tutorName}</strong> (${r.gmail || r.email})<br>
-                        <strong>Subjects:</strong> ${subjects}<br>
-                        <strong>Experience:</strong> ${r.experience || 'Not specified'} years<br>
-                        <strong>Bio:</strong> ${r.bio || r.description || 'No description provided'}
-                    </div>
-                    <div class="tutor-actions">
-                        <button class="btn btn-small" onclick="approveTutor('${r._id}')">Approve</button>
-                        <button class="btn btn-small btn-danger" onclick="rejectTutor('${r._id}')">Reject</button>
-                    </div>
-                </li>`;
-            }).join('')}</ul>
-        </div>
-        <div class="panel-section">
-            <h3>Tutor Subject Assignments</h3>
-            <div class="subject-assignments">
-                ${state.subjects.map(subject => {
-                    const assignedTutors = state.tutors.filter(t => 
-                        t.isApproved !== false && 
-                        Array.isArray(t.subjects) && 
-                        t.subjects.includes(subject.name)
-                    );
-                    const tutorNames = assignedTutors.map(t => 
-                        t.name || (t.firstName && t.surname ? `${t.firstName} ${t.surname}` : 'Unknown Tutor')
-                    );
-                    return `<div class="subject-assignment-item">
-                        <strong>${subject.name}:</strong> ${tutorNames.length > 0 ? tutorNames.join(', ') : 'No tutors assigned'}
-                    </div>`;
-                }).join('')}
-            </div>
-        </div>`;
-}
+// Tutor Dashboard - Removed to treat tutors like normal users
 
 // --- API Helpers ---
 const API = {
@@ -843,13 +722,6 @@ const API = {
         });
         if (!res.ok) throw new Error((await res.json()).message);
         return res.json();
-    },
-    async getTutorBookings(token) {
-        const res = await fetch('/api/bookings/tutor', {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (!res.ok) throw new Error('Failed to fetch tutor bookings');
-        return await res.json();
     }
 };
 
@@ -872,22 +744,12 @@ async function login() {
             token: data.token
         };
         
-        // Check if user is a tutor by trying to get tutor bookings
-        try {
-            await API.getTutorBookings(data.token);
-            // If successful, user is a tutor
-            state.user.isTutor = true;
-            await fetchTutorData();
-            setView('tutorDashboard');
-        } catch (tutorError) {
-            // User is not a tutor, proceed with normal flow
-            if (state.user.isManager) {
-                await fetchManagerData();
-                setView('manager');
-            } else {
-                await fetchUserData();
-                setView('book');
-            }
+        if (state.user.isManager) {
+            await fetchManagerData();
+            setView('manager');
+        } else {
+            await fetchUserData();
+            setView('book');
         }
     } catch (e) {
         app.innerHTML = showError(e.message) + loginView();
@@ -920,14 +782,6 @@ async function fetchUserData() {
     state.profile = { email: state.user.email, username: state.user.username };
 }
 
-async function fetchTutorData() {
-    state.subjects = await API.getSubjects();
-    // Tutors don't need to fetch all tutors, just their own bookings
-    state.tutors = []; // Empty array for tutors
-    state.myBookings = await API.getTutorBookings(state.user.token);
-    state.profile = { email: state.user.email, username: state.user.username };
-}
-
 async function fetchManagerData() {
     console.log('fetchManagerData called');
     state.subjects = await API.getAllSubjects(state.user.token);
@@ -945,7 +799,6 @@ async function selectSubject(subjectId) {
     console.log('Current view before selectSubject:', state.currentView);
     
     state.selectedSubject = subjectId;
-    // Don't call API.getTutors since we'll filter from state in chooseTutorView
     state.selectedTutor = null;
     setView('chooseTutor');
     
