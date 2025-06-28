@@ -91,6 +91,12 @@ function setView(view) {
         case 'book':
             app.innerHTML = bookView();
             break;
+        case 'chooseTutor':
+            app.innerHTML = chooseTutorView();
+            break;
+        case 'bookingForm':
+            app.innerHTML = bookingFormView();
+            break;
         case 'becomeTutor':
             app.innerHTML = becomeTutorView();
             break;
