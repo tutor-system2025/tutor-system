@@ -12,7 +12,8 @@ let state = {
     selectedTutorObj: null,
     myBookings: [],
     profile: {},
-    selectedBookingId: null
+    selectedBookingId: null,
+    loading: false
 };
 
 const app = document.getElementById('app');
@@ -63,7 +64,31 @@ function updateUINav() {
 
 function setView(view) {
     state.currentView = view;
-    render();
+    
+    // Fetch fresh data for specific views
+    if (view === 'myBookings' && state.user) {
+        state.loading = true;
+        render(); // Show loading state immediately
+        fetchUserData().then(() => {
+            state.loading = false;
+            render();
+        }).catch(() => {
+            state.loading = false;
+            render();
+        });
+    } else if (view === 'manager' && state.user && state.user.isManager) {
+        state.loading = true;
+        render(); // Show loading state immediately
+        fetchManagerData().then(() => {
+            state.loading = false;
+            render();
+        }).catch(() => {
+            state.loading = false;
+            render();
+        });
+    } else {
+        render();
+    }
 }
 
 function showError(msg) {
@@ -232,6 +257,14 @@ function becomeTutorView() {
 
 // My Bookings
 function myBookingsView() {
+    // Check if we're currently loading data
+    if (state.loading) {
+        return `<h2>My Bookings</h2>
+            <div style="text-align: center; padding: 40px;">
+                <p>Loading your bookings...</p>
+            </div>`;
+    }
+    
     let list = state.myBookings.map(b => {
         // Handle populated tutor object
         let tutorName = 'Unknown Tutor';
@@ -271,6 +304,9 @@ function myBookingsView() {
     }
     
     return `<h2>My Bookings</h2>
+        <div style="text-align: right; margin-bottom: 20px;">
+            <button class="btn btn-small" onclick="refreshBookings()">Refresh</button>
+        </div>
         <ul class="list">${list}</ul>`;
 }
 
@@ -995,6 +1031,23 @@ async function cancelBooking(bookingId) {
 async function viewBooking(bookingId) {
     state.selectedBookingId = bookingId;
     setView('bookingDetail');
+}
+
+async function refreshBookings() {
+    if (!state.user) return;
+    
+    state.loading = true;
+    render(); // Show loading state immediately
+    
+    try {
+        await fetchUserData();
+        state.loading = false;
+        render();
+    } catch (error) {
+        state.loading = false;
+        render();
+        console.error('Error refreshing bookings:', error);
+    }
 }
 
 // Initial render
