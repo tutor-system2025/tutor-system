@@ -265,7 +265,7 @@ function managerPanelView() {
             </form>
         </div>
         <div class="panel-section">
-            <h3>Tutor Registration Requests</h3>
+            <h3>Pending Tutor Requests</h3>
             <ul class="list">${state.tutorRequests.map(r => {
                 const tutorName = r.name || (r.firstName && r.surname ? `${r.firstName} ${r.surname}` : 'Unknown Tutor');
                 const subjects = Array.isArray(r.subjects) ? r.subjects.join(', ') : r.subjects;
@@ -278,14 +278,14 @@ function managerPanelView() {
                     </div>
                     <div class="tutor-actions">
                         <button class="btn btn-small" onclick="approveTutor('${r._id}')">Approve</button>
-                        <button class="btn btn-small" onclick="rejectTutor('${r._id}')">Reject</button>
+                        <button class="btn btn-small btn-danger" onclick="rejectTutor('${r._id}')">Reject</button>
                     </div>
                 </li>`;
             }).join('')}</ul>
         </div>
         <div class="panel-section">
-            <h3>Assign Tutors to Subjects</h3>
-            <ul class="list">${state.tutors.map(t => {
+            <h3>Approved Tutors</h3>
+            <ul class="list">${state.tutors.filter(t => t.isApproved !== false).map(t => {
                 const tutorName = t.name || (t.firstName && t.surname ? `${t.firstName} ${t.surname}` : 'Unknown Tutor');
                 const currentSubjects = Array.isArray(t.subjects) ? t.subjects.join(', ') : t.subjects || 'No subjects assigned';
                 return `<li class="tutor-item" data-tutor-id="${t._id}">
@@ -315,6 +315,24 @@ function managerPanelView() {
                     </div>
                 </li>`;
             }).join('')}</ul>
+        </div>
+        <div class="panel-section">
+            <h3>Subject Assignments Overview</h3>
+            <div class="subject-assignments">
+                ${state.subjects.map(subject => {
+                    const assignedTutors = state.tutors.filter(t => 
+                        t.isApproved !== false && 
+                        Array.isArray(t.subjects) && 
+                        t.subjects.includes(subject.name)
+                    );
+                    const tutorNames = assignedTutors.map(t => 
+                        t.name || (t.firstName && t.surname ? `${t.firstName} ${t.surname}` : 'Unknown Tutor')
+                    );
+                    return `<div class="subject-assignment-item">
+                        <strong>${subject.name}:</strong> ${tutorNames.length > 0 ? tutorNames.join(', ') : 'No tutors assigned'}
+                    </div>`;
+                }).join('')}
+            </div>
         </div>`;
 }
 
@@ -620,10 +638,33 @@ async function addSubject() {
 
 async function approveTutor(tutorId) {
     try {
+        console.log('Approving tutor:', tutorId);
         await API.approveTutor(state.user.token, tutorId);
+        
+        // Get the tutor's requested subjects and assign them
+        const tutor = state.tutorRequests.find(t => t._id === tutorId);
+        if (tutor && tutor.subjects && Array.isArray(tutor.subjects)) {
+            console.log('Auto-assigning tutor to requested subjects:', tutor.subjects);
+            
+            // Find subject IDs for the requested subjects
+            const subjectIds = [];
+            for (const subjectName of tutor.subjects) {
+                const subject = state.subjects.find(s => s.name === subjectName);
+                if (subject) {
+                    subjectIds.push(subject._id);
+                }
+            }
+            
+            if (subjectIds.length > 0) {
+                console.log('Assigning tutor to subject IDs:', subjectIds);
+                await API.assignMultipleSubjects(state.user.token, tutorId, subjectIds);
+            }
+        }
+        
         await fetchManagerData();
         render();
     } catch (e) {
+        console.error('Error approving tutor:', e);
         app.innerHTML = showError(e.message) + managerPanelView();
     }
 }
