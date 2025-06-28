@@ -862,6 +862,13 @@ const API = {
         if (!res.ok) throw new Error('Failed to fetch bookings');
         return await res.json();
     },
+    async getTutorBookings(token) {
+        const res = await fetch('/api/bookings/tutor', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error('Failed to fetch tutor bookings');
+        return await res.json();
+    },
     async getProfile(token) {
         // Not strictly needed, info is in state.user
         return state.user;
@@ -1052,6 +1059,28 @@ async function fetchUserData() {
     // Fetch all approved tutors for booking sessions
     state.tutors = await API.getTutors();
     state.myBookings = await API.getMyBookings(state.user.token);
+    
+    console.log('fetchUserData - Initial myBookings:', state.myBookings);
+    
+    // If user is a tutor, also fetch bookings where they are the tutor
+    const isTutor = state.tutors && state.tutors.some(t => 
+        t.email === state.user.email && t.isApproved !== false
+    );
+    
+    console.log('fetchUserData - isTutor:', isTutor);
+    
+    if (isTutor) {
+        try {
+            const tutorBookings = await API.getTutorBookings(state.user.token);
+            console.log('fetchUserData - tutorBookings from API:', tutorBookings);
+            // Combine user bookings (as student) with tutor bookings (as tutor)
+            state.myBookings = [...state.myBookings, ...tutorBookings];
+            console.log('fetchUserData - Combined myBookings:', state.myBookings);
+        } catch (error) {
+            console.error('Error fetching tutor bookings:', error);
+        }
+    }
+    
     state.profile = { email: state.user.email, username: state.user.username };
 }
 
