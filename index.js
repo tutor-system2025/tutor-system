@@ -248,6 +248,7 @@ app.get('/api/bookings/user', authenticateToken, async (req, res) => {
       .populate('tutor', 'firstName surname email')
       .sort({ createdAt: -1 });
     
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.json(bookings);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
@@ -266,6 +267,7 @@ app.get('/api/bookings/tutor', authenticateToken, async (req, res) => {
       .populate('user', 'firstName surname email')
       .sort({ createdAt: -1 });
     
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.json(bookings);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
@@ -353,6 +355,7 @@ app.put('/api/profile', authenticateToken, async (req, res) => {
       { new: true }
     );
     
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.json({ message: 'Profile updated successfully', user });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
