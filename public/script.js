@@ -334,13 +334,22 @@ function tutorPanelView() {
         // Handle populated user object
         let userName = 'Unknown User';
         let userEmail = '';
+        
+        console.log('Processing booking user data:', b.user);
+        
         if (b.user) {
             if (typeof b.user === 'string') {
                 userName = b.user;
+                console.log('User is string, no email available');
             } else if (b.user.firstName && b.user.surname) {
                 userName = `${b.user.firstName} ${b.user.surname}`;
                 userEmail = b.user.email || '';
+                console.log('User object with email:', userEmail);
+            } else {
+                console.log('User object structure:', b.user);
             }
+        } else {
+            console.log('No user data in booking');
         }
         
         // Format the date/time
@@ -355,6 +364,11 @@ function tutorPanelView() {
         const emailSubject = encodeURIComponent(`Tutoring Session - ${b.subject} - ${timeDisplay}`);
         const emailBody = encodeURIComponent(`Hi ${userName},\n\nRegarding our tutoring session:\n\nSubject: ${b.subject}\nTime: ${timeDisplay}\nDescription: ${b.description || 'No description provided'}\n\nBest regards,\n${state.user.username}`);
         
+        // Only show email button if we have an email
+        const emailButton = userEmail ? 
+            `<a href="mailto:${userEmail}?subject=${emailSubject}&body=${emailBody}" class="btn btn-small" target="_blank">Email Student</a>` :
+            `<span class="btn btn-small disabled" title="No email available">Email Student</span>`;
+        
         return `<li class="booking-item">
             <div class="booking-info">
                 <strong>${b.subject}</strong> with ${userName}<br>
@@ -363,7 +377,7 @@ function tutorPanelView() {
                 <span class="booking-description">${b.description || 'No description provided'}</span>
             </div>
             <div class="booking-actions">
-                <a href="mailto:${userEmail}?subject=${emailSubject}&body=${emailBody}" class="btn btn-small" target="_blank">Email Student</a>
+                ${emailButton}
                 ${b.status !== 'accepted' ? `<button class="btn btn-small btn-success" onclick="acceptBooking('${b._id}')">Accept Booking</button>` : '<span class="accepted-badge">✓ Accepted</span>'}
             </div>
         </li>`;
