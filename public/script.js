@@ -287,8 +287,8 @@ function becomeTutorView() {
                 <input type="text" id="tutor-subjects" placeholder="e.g. Math, Physics, Chemistry" required />
             </div>
             <div class="input-group">
-                <label for="tutor-desc">Description (teaching experience, availability, etc.)</label>
-                <textarea id="tutor-desc" placeholder="Describe your teaching experience, qualifications, availability, and what you can offer students..." required></textarea>
+                <label for="tutor-desc">Description (time, level, etc.)</label>
+                <textarea id="tutor-desc" placeholder="Describe your subject experiance, availability, and what you can offer students. etc." required></textarea>
             </div>
             <button class="btn" type="submit">Submit Tutor Application</button>
         </form>`;
@@ -350,6 +350,10 @@ function tutorPanelView() {
             `<button class="btn btn-small" onclick="openMessageModal('${b._id}', '${userName}', '${userEmail}', '${b.subject}')">Message Student</button>` :
             `<span class="btn btn-small disabled" title="No email available">Message Student</span>`;
         
+        // Add complete session button for accepted bookings
+        const completeButton = b.status === 'accepted' ? 
+            `<button class="btn btn-small btn-success" onclick="openCompleteSessionModal('${b._id}', '${b.subject}', '${userName}')">Complete Session</button>` : '';
+        
         return `<li class="booking-item">
             <div class="booking-info">
                 <strong>${b.subject}</strong> with ${userName}<br>
@@ -360,6 +364,7 @@ function tutorPanelView() {
             <div class="booking-actions">
                 ${emailButton}
                 ${b.status !== 'accepted' ? `<button class="btn btn-small btn-success" onclick="acceptBooking('${b._id}')">Accept Booking</button>` : '<span class="accepted-badge">✓ Accepted</span>'}
+                ${completeButton}
             </div>
         </li>`;
     }).join('');
@@ -987,6 +992,18 @@ const API = {
         });
         if (!res.ok) throw new Error((await res.json()).message);
         return res.json();
+    },
+    async completeSession(token, bookingId, duration) {
+        const res = await fetch(`/api/bookings/${bookingId}/complete`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ duration })
+        });
+        if (!res.ok) throw new Error((await res.json()).message);
+        return res.json();
     }
 };
 
@@ -1451,8 +1468,49 @@ function openMessageModal(bookingId, studentName, studentEmail, subject) {
     }, 100);
 }
 
+function openCompleteSessionModal(bookingId, subject, studentName) {
+    const modalHTML = `
+        <div id="completeSessionModal" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Complete Session</h3>
+                    <button class="modal-close" onclick="closeCompleteSessionModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p><strong>Subject:</strong> ${subject}</p>
+                    <p><strong>Student:</strong> ${studentName}</p>
+                    <div class="input-group">
+                        <label for="session-duration">Session Duration:</label>
+                        <input type="text" id="session-duration" placeholder="e.g., 1 hour, 45 minutes, 2 hours 30 minutes" required />
+                    </div>
+                    <p class="info-text">This will mark the session as completed and send a notification email.</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closeCompleteSessionModal()">Cancel</button>
+                    <button class="btn btn-success" onclick="completeSession('${bookingId}')">Complete Session</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Add modal to body
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    // Focus on duration input
+    setTimeout(() => {
+        document.getElementById('session-duration').focus();
+    }, 100);
+}
+
 function closeMessageModal() {
     const modal = document.getElementById('messageModal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+function closeCompleteSessionModal() {
+    const modal = document.getElementById('completeSessionModal');
     if (modal) {
         modal.remove();
     }
@@ -1476,6 +1534,30 @@ async function sendMessage(bookingId, studentEmail, subject) {
     } catch (error) {
         console.error('Error sending message:', error);
         app.innerHTML = showError('Failed to send message: ' + error.message);
+        setTimeout(() => {
+            render();
+        }, 3000);
+    }
+}
+
+async function completeSession(bookingId) {
+    const duration = document.getElementById('session-duration').value.trim();
+    
+    if (!duration) {
+        alert('Please enter the session duration');
+        return;
+    }
+    
+    try {
+        await API.completeSession(state.user.token, bookingId, duration);
+        closeCompleteSessionModal();
+        app.innerHTML = showSuccess('Session completed successfully! Email notification sent.');
+        setTimeout(() => {
+            render();
+        }, 2000);
+    } catch (error) {
+        console.error('Error completing session:', error);
+        app.innerHTML = showError('Failed to complete session: ' + error.message);
         setTimeout(() => {
             render();
         }, 3000);

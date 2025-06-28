@@ -433,6 +433,65 @@ app.put('/api/bookings/:id/accept', authenticateToken, async (req, res) => {
   }
 });
 
+// Complete Session (Tutor only)
+app.put('/api/bookings/:id/complete', authenticateToken, async (req, res) => {
+  try {
+    const { duration } = req.body;
+    
+    if (!duration) {
+      return res.status(400).json({ message: 'Session duration is required' });
+    }
+    
+    // Find the booking and ensure it belongs to the tutor
+    const booking = await Booking.findOne({ 
+      _id: req.params.id
+    }).populate('user', 'firstName surname email').populate('tutor', 'firstName surname email');
+    
+    if (!booking) {
+      return res.status(404).json({ message: 'Booking not found' });
+    }
+    
+    // Check if the current user is the tutor for this booking
+    const tutor = await Tutor.findOne({ email: req.user.email });
+    if (!tutor || booking.tutor._id.toString() !== tutor._id.toString()) {
+      return res.status(403).json({ message: 'You can only complete sessions assigned to you' });
+    }
+    
+    // Update booking status to completed
+    booking.status = 'completed';
+    await booking.save();
+    
+    // Send completion notification email to tutorsystemparnell@gmail.com
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: 'tutorsystemparnell@gmail.com',
+      subject: `Session Completed - ${booking.subject}`,
+      html: `
+        <h2>Session Completion Report</h2>
+        <p>A tutoring session has been completed with the following details:</p>
+        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #667eea;">
+          <p><strong>Subject:</strong> ${booking.subject}</p>
+          <p><strong>Tutor:</strong> ${booking.tutor.firstName} ${booking.tutor.surname} (${booking.tutor.email})</p>
+          <p><strong>Student:</strong> ${booking.user.firstName} ${booking.user.surname} (${booking.user.email})</p>
+          <p><strong>Session Duration:</strong> ${duration}</p>
+          <p><strong>Original Time:</strong> ${booking.timePeriod || 'Not specified'}</p>
+          <p><strong>Description:</strong> ${booking.description || 'No description provided'}</p>
+          <p><strong>Completion Date:</strong> ${new Date().toLocaleString()}</p>
+        </div>
+        <p>This session has been marked as completed and removed from active bookings.</p>
+        <p>Best regards,<br>Tutoring System</p>
+      `
+    };
+    
+    await transporter.sendMail(mailOptions);
+    
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.json({ message: 'Session completed successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 // Send Message to Student (Tutor only)
 app.post('/api/bookings/:id/message', authenticateToken, async (req, res) => {
   try {
