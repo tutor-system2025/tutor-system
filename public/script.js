@@ -446,13 +446,21 @@ const API = {
         return res.json();
     },
     async assignMultipleSubjects(token, tutorId, subjectIds) {
+        console.log('API.assignMultipleSubjects called with:', { tutorId, subjectIds });
         const res = await fetch(`/api/admin/tutors/${tutorId}/assign-multiple`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify({ subjectIds })
         });
-        if (!res.ok) throw new Error((await res.json()).message);
-        return res.json();
+        console.log('API response status:', res.status);
+        if (!res.ok) {
+            const errorData = await res.json();
+            console.error('API error:', errorData);
+            throw new Error(errorData.message);
+        }
+        const result = await res.json();
+        console.log('API success:', result);
+        return result;
     },
     async rejectTutor(token, tutorId) {
         const res = await fetch(`/api/admin/tutors/${tutorId}/reject`, {
@@ -620,16 +628,21 @@ async function assignTutor(tutorId) {
 }
 
 async function assignMultipleSubjects(tutorId) {
+    console.log('assignMultipleSubjects called with tutorId:', tutorId);
     const checkboxes = document.querySelectorAll(`input[id^="subject-${tutorId}-"]`);
+    console.log('Found checkboxes:', checkboxes.length);
     const selectedSubjects = Array.from(checkboxes)
         .filter(cb => cb.checked)
         .map(cb => cb.value);
+    console.log('Selected subjects:', selectedSubjects);
     
     try {
         await API.assignMultipleSubjects(state.user.token, tutorId, selectedSubjects);
+        console.log('API call successful');
         await fetchManagerData();
         render();
     } catch (e) {
+        console.error('Error in assignMultipleSubjects:', e);
         app.innerHTML = showError(e.message) + managerPanelView();
     }
 }
