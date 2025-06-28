@@ -374,6 +374,54 @@ function myBookingsView() {
         t.email === state.user.email && t.isApproved !== false
     );
     
+    if (!isTutor) {
+        // Regular user - show normal booking list
+        let list = state.myBookings.map(b => {
+            // Handle populated tutor object
+            let tutorName = 'Unknown Tutor';
+            if (b.tutor) {
+                if (typeof b.tutor === 'string') {
+                    tutorName = b.tutor;
+                } else if (b.tutor.firstName && b.tutor.surname) {
+                    tutorName = `${b.tutor.firstName} ${b.tutor.surname}`;
+                } else if (b.tutor.name) {
+                    tutorName = b.tutor.name;
+                }
+            }
+            
+            // Format the date/time
+            let timeDisplay = 'No time specified';
+            if (b.date) {
+                const date = new Date(b.date);
+                timeDisplay = date.toLocaleString();
+            } else if (b.timePeriod) {
+                timeDisplay = b.timePeriod;
+            }
+            
+            return `<li class="booking-item" onclick="viewBooking('${b._id}')">
+                <div class="booking-info">
+                    <strong>${b.subject}</strong> with ${tutorName}<br>
+                    <span class="booking-time">${timeDisplay}</span><br>
+                    <span class="booking-status">Status: ${b.status || 'pending'}</span>
+                </div>
+                <div class="booking-actions">
+                    <button class="btn btn-small" onclick="event.stopPropagation(); viewBooking('${b._id}')">View Details</button>
+                </div>
+            </li>`;
+        }).join('');
+        
+        if (list === '') {
+            list = '<li><em>No bookings found.</em></li>';
+        }
+        
+        return `<h2>My Bookings</h2>
+            <div style="text-align: right; margin-bottom: 20px;">
+                <button class="btn btn-small" onclick="refreshBookings()">Refresh</button>
+            </div>
+            <ul class="list">${list}</ul>`;
+    }
+    
+    // Tutor user - show separated booking lists
     // Separate bookings where user is student vs tutor
     const studentBookings = state.myBookings.filter(b => {
         // User is the student (booking.user matches current user)
@@ -387,7 +435,7 @@ function myBookingsView() {
         return false;
     });
     
-    const tutorBookings = isTutor ? state.myBookings.filter(b => {
+    const tutorBookings = state.myBookings.filter(b => {
         // User is the tutor (booking.tutor matches current tutor)
         const currentTutor = state.tutors.find(t => t.email === state.user.email);
         if (b.tutor && currentTutor) {
@@ -398,7 +446,7 @@ function myBookingsView() {
             }
         }
         return false;
-    }) : [];
+    });
     
     let studentList = studentBookings.map(b => {
         // Handle populated tutor object
@@ -486,14 +534,12 @@ function myBookingsView() {
         <ul class="list">${studentList}</ul>
     </div>`;
     
-    // Show tutor bookings if user is a tutor
-    if (isTutor) {
-        content += `<div class="panel-section">
-            <h3>My Teaching Sessions (You as Tutor)</h3>
-            <p class="info-text">These are sessions where you are the tutor. Manage them in the Tutor Panel.</p>
-            <ul class="list">${tutorList}</ul>
-        </div>`;
-    }
+    // Show tutor bookings
+    content += `<div class="panel-section">
+        <h3>My Teaching Sessions (You as Tutor)</h3>
+        <p class="info-text">These are sessions where you are the tutor. Manage them in the Tutor Panel.</p>
+        <ul class="list">${tutorList}</ul>
+    </div>`;
     
     return content;
 }
