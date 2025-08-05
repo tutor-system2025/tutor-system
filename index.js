@@ -806,6 +806,29 @@ app.get('/api/admin/tutor-requests', authenticateToken, async (req, res) => {
   }
 });
 
+// Create manager account endpoint (temporary)
+app.post('/api/create-manager', async (req, res) => {
+  try {
+    const existingManager = await User.findOne({ email: 'tutorsystemparnell@gmail.com' });
+    if (existingManager) {
+      return res.json({ message: 'Manager account already exists' });
+    }
+    
+    const hashedPassword = await bcrypt.hash('Academic123', 10);
+    const manager = new User({
+      firstName: 'Manager',
+      surname: 'Account',
+      email: 'tutorsystemparnell@gmail.com',
+      password: hashedPassword,
+      isAdmin: true
+    });
+    await manager.save();
+    res.json({ message: 'Manager account created successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 // Serve frontend
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
