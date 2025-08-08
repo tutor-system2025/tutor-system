@@ -122,6 +122,9 @@ function setView(view) {
         case 'bookingDetail':
             app.innerHTML = bookingDetailView(state.selectedBookingId);
             break;
+        case 'bookingRecords':
+            app.innerHTML = bookingRecordsView();
+            break;
         default:
             app.innerHTML = bookView();
     }
@@ -157,6 +160,7 @@ function render() {
             case 'profile': content = profileView(); break;
             case 'manager': content = managerPanelView(); break;
             case 'bookingDetail': content = bookingDetailView(state.selectedBookingId); break;
+            case 'bookingRecords': content = bookingRecordsView(); break;
             case 'tutorDashboard': content = tutorDashboardView(); break;
             default: content = bookView();
         }
@@ -587,41 +591,8 @@ function profileView() {
 function managerPanelView() {
     return `<h2>Manager Panel</h2>
         <div class="panel-section">
-            <h3>All Bookings</h3>
-            <ul class="list">${state.bookings.map(b => {
-                // Handle populated user object
-                let userName = 'Unknown User';
-                if (b.user) {
-                    if (typeof b.user === 'string') {
-                        userName = b.user;
-                    } else if (b.user.firstName && b.user.surname) {
-                        userName = `${b.user.firstName} ${b.user.surname}`;
-                    }
-                }
-                
-                // Handle populated tutor object
-                let tutorName = 'Unknown Tutor';
-                if (b.tutor) {
-                    if (typeof b.tutor === 'string') {
-                        tutorName = b.tutor;
-                    } else if (b.tutor.firstName && b.tutor.surname) {
-                        tutorName = `${b.tutor.firstName} ${b.tutor.surname}`;
-                    } else if (b.tutor.name) {
-                        tutorName = b.tutor.name;
-                    }
-                }
-                
-                // Format the date/time
-                let timeDisplay = 'No time specified';
-                if (b.date) {
-                    const date = new Date(b.date);
-                    timeDisplay = date.toLocaleString();
-                } else if (b.timePeriod) {
-                    timeDisplay = b.timePeriod;
-                }
-                
-                return `<li>${userName} booked ${b.subject} with ${tutorName} at ${timeDisplay}</li>`;
-            }).join('')}</ul>
+            <h3>Booking Records</h3>
+            <button class="btn btn-primary" onclick="setView('bookingRecords')">View Booking Records</button>
         </div>
         <div class="panel-section">
             <h3>Subjects</h3>
@@ -708,6 +679,63 @@ function managerPanelView() {
                 }).join('')}
             </div>
         </div>`;
+}
+
+// Booking Records View
+function bookingRecordsView() {
+    // Group bookings by date
+    const bookingsByDate = {};
+    state.allBookings.forEach(booking => {
+        const date = new Date(booking.date).toDateString();
+        if (!bookingsByDate[date]) {
+            bookingsByDate[date] = [];
+        }
+        bookingsByDate[date].push(booking);
+    });
+
+    const content = `
+        <div class="container">
+            <h2>Booking Records</h2>
+            <button class="btn btn-secondary" onclick="setView('manager')">← Back to Manager Panel</button>
+            
+            ${Object.keys(bookingsByDate).length === 0 ? '<p>No booking records found</p>' : 
+                Object.entries(bookingsByDate).map(([date, bookings]) => `
+                    <div class="date-section">
+                        <div class="date-header">
+                            <h3>${new Date(date).toLocaleDateString()}</h3>
+                            <button class="btn btn-danger" onclick="removeBookingsForDate('${date}')">Remove All Bookings for This Date</button>
+                        </div>
+                        <div class="bookings-list">
+                            ${bookings.map(booking => {
+                                const userName = booking.user ? 
+                                    `${booking.user.firstName} ${booking.user.surname}` : 'Unknown User';
+                                const tutorName = booking.tutor ? 
+                                    `${booking.tutor.firstName} ${booking.tutor.surname}` : 'Unknown Tutor';
+                                const timeDisplay = booking.timePeriod || 'No time specified';
+                                const status = booking.status || 'pending';
+                                
+                                return `
+                                    <div class="booking-record-item">
+                                        <div class="booking-info">
+                                            <strong>${userName}</strong> booked <strong>${booking.subject}</strong> 
+                                            with <strong>${tutorName}</strong>
+                                        </div>
+                                        <div class="booking-details">
+                                            <span class="time">${timeDisplay}</span>
+                                            <span class="status status-${status}">${status}</span>
+                                        </div>
+                                        ${booking.description ? `<div class="description">${booking.description}</div>` : ''}
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `).join('')
+            }
+        </div>
+    `;
+    
+    document.getElementById('content').innerHTML = content;
 }
 
 // Booking Detail View
@@ -947,6 +975,14 @@ const API = {
     },
     async removeTutor(token, tutorId) {
         const res = await fetch(`/api/admin/tutors/${tutorId}/remove`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error((await res.json()).message);
+        return res.json();
+    },
+    async removeBooking(token, bookingId) {
+        const res = await fetch(`/api/bookings/${bookingId}`, {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -1561,5 +1597,31 @@ async function completeSession(bookingId) {
         setTimeout(() => {
             render();
         }, 3000);
+    }
+}
+
+async function removeBookingsForDate(dateString) {
+    if (!confirm(`Are you sure you want to remove all bookings for ${new Date(dateString).toLocaleDateString()}?`)) {
+        return;
+    }
+    
+    try {
+        // Filter bookings for the specific date
+        const bookingsToRemove = state.allBookings.filter(booking => 
+            new Date(booking.date).toDateString() === dateString
+        );
+        
+        // Remove each booking
+        for (const booking of bookingsToRemove) {
+            await API.removeBooking(state.token, booking._id);
+        }
+        
+        showSuccess(`Removed ${bookingsToRemove.length} bookings for ${new Date(dateString).toLocaleDateString()}`);
+        
+        // Refresh the booking records view
+        await fetchManagerData();
+        setView('bookingRecords');
+    } catch (error) {
+        showError(error.message);
     }
 } 
