@@ -139,7 +139,17 @@ function setView(view) {
             app.innerHTML = bookingDetailView(state.selectedBookingId);
             break;
         case 'bookingRecords':
-            app.innerHTML = bookingRecordsView();
+            // Ensure manager data is loaded before showing booking records
+            if (!state.bookings || !state.subjects || !state.tutors) {
+                app.innerHTML = '<div class="container"><h2>Loading...</h2><p>Please wait while we load the booking records.</p></div>';
+                fetchManagerData().then(() => {
+                    app.innerHTML = bookingRecordsView();
+                }).catch(error => {
+                    app.innerHTML = showError('Failed to load booking records: ' + error.message);
+                });
+            } else {
+                app.innerHTML = bookingRecordsView();
+            }
             break;
         default:
             app.innerHTML = bookView();
@@ -176,7 +186,19 @@ function render() {
             case 'profile': content = profileView(); break;
             case 'manager': content = managerPanelView(); break;
             case 'bookingDetail': content = bookingDetailView(state.selectedBookingId); break;
-            case 'bookingRecords': content = bookingRecordsView(); break;
+            case 'bookingRecords': 
+                if (!state.bookings || !state.subjects || !state.tutors) {
+                    content = '<div class="container"><h2>Loading...</h2><p>Please wait while we load the booking records.</p></div>';
+                    fetchManagerData().then(() => {
+                        render();
+                    }).catch(error => {
+                        content = showError('Failed to load booking records: ' + error.message);
+                        app.innerHTML = navBar() + content;
+                    });
+                } else {
+                    content = bookingRecordsView(); 
+                }
+                break;
             case 'tutorDashboard': content = tutorDashboardView(); break;
             default: content = bookView();
         }
@@ -699,9 +721,18 @@ function managerPanelView() {
 
 // Booking Records View
 function bookingRecordsView() {
+    // Check if bookings data is available
+    if (!state.bookings || !Array.isArray(state.bookings)) {
+        return `<div class="container">
+            <h2>Booking Records</h2>
+            <button class="btn btn-secondary" onclick="setView('manager')">← Back to Manager Panel</button>
+            <p>Loading booking records...</p>
+        </div>`;
+    }
+    
     // Group bookings by date
     const bookingsByDate = {};
-    state.allBookings.forEach(booking => {
+    state.bookings.forEach(booking => {
         const date = new Date(booking.date).toDateString();
         if (!bookingsByDate[date]) {
             bookingsByDate[date] = [];
