@@ -25,6 +25,7 @@ let state = {
     selectedTutor: null,
     selectedTutorObj: null,
     myBookings: [],
+    tutorBookings: [], // Add missing tutorBookings property
     profile: {},
     selectedBookingId: null,
     loading: false
@@ -192,8 +193,7 @@ function render() {
                     fetchManagerData().then(() => {
                         render();
                     }).catch(error => {
-                        content = showError('Failed to load booking records: ' + error.message);
-                        app.innerHTML = navBar() + content;
+                        app.innerHTML = navBar() + showError('Failed to load booking records: ' + error.message);
                     });
                 } else {
                     content = bookingRecordsView(); 
@@ -722,8 +722,14 @@ function managerPanelView() {
 
 // Booking Records View
 function bookingRecordsView() {
+    console.log('bookingRecordsView called');
+    console.log('state.bookings:', state.bookings);
+    console.log('state.bookings type:', typeof state.bookings);
+    console.log('state.bookings isArray:', Array.isArray(state.bookings));
+    
     // Check if bookings data is available
     if (!state.bookings || !Array.isArray(state.bookings)) {
+        console.log('Bookings data not available, showing loading message');
         return `<div class="container">
             <h2>Booking Records</h2>
             <button class="btn btn-secondary" onclick="setView('manager')">← Back to Manager Panel</button>
@@ -1201,9 +1207,12 @@ async function fetchUserData() {
 
 async function fetchManagerData() {
     console.log('fetchManagerData called');
+    console.log('User token:', state.user.token);
+    
     try {
         state.subjects = await API.getAllSubjects(state.user.token);
         console.log('Subjects fetched:', state.subjects.length);
+        console.log('Subjects data:', state.subjects);
     } catch (error) {
         console.error('Error fetching subjects:', error);
         throw new Error('Failed to fetch subjects: ' + error.message);
@@ -1212,6 +1221,7 @@ async function fetchManagerData() {
     try {
         state.tutors = await API.getAllTutors(state.user.token);
         console.log('Tutors fetched:', state.tutors.length);
+        console.log('Tutors data:', state.tutors);
     } catch (error) {
         console.error('Error fetching tutors:', error);
         throw new Error('Failed to fetch tutors: ' + error.message);
@@ -1220,6 +1230,7 @@ async function fetchManagerData() {
     try {
         state.bookings = await API.getAllBookings(state.user.token);
         console.log('Bookings fetched:', state.bookings.length);
+        console.log('Bookings data:', state.bookings);
     } catch (error) {
         console.error('Error fetching bookings:', error);
         throw new Error('Failed to fetch all bookings: ' + error.message);
@@ -1228,10 +1239,13 @@ async function fetchManagerData() {
     try {
         state.tutorRequests = await API.getPendingTutors(state.user.token);
         console.log('Tutor requests fetched:', state.tutorRequests.length);
+        console.log('Tutor requests data:', state.tutorRequests);
     } catch (error) {
         console.error('Error fetching tutor requests:', error);
         throw new Error('Failed to fetch tutor requests: ' + error.message);
     }
+    
+    console.log('fetchManagerData completed successfully');
 }
 
 async function selectSubject(subjectId) {
