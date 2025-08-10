@@ -1,61 +1,37 @@
-const CACHE_NAME = 'tutor-system-v1.0.3';
-const urlsToCache = [
-  '/',
-  '/script.js',
-  '/index.html'
-];
+const CACHE_NAME = 'tutor-system-v1.0.4';
 
-// Install event - cache resources
+// Install event - minimal caching
 self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log('Opened cache');
-        return cache.addAll(urlsToCache);
-      })
-  );
+  console.log('Service Worker installing...');
+  self.skipWaiting();
 });
 
-// Fetch event - serve from cache or network
+// Fetch event - always fetch from network, never cache
 self.addEventListener('fetch', event => {
+  // Skip caching for all requests - always fetch from network
   event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        // Return cached version or fetch from network
-        if (response) {
-          return response;
-        }
-        
-        // If not in cache, fetch from network
-        return fetch(event.request).then(fetchResponse => {
-          // Don't cache non-GET requests or non-successful responses
-          if (event.request.method !== 'GET' || !fetchResponse || fetchResponse.status !== 200) {
-            return fetchResponse;
-          }
-          
-          // Cache the response
-          const responseToCache = fetchResponse.clone();
-          caches.open(CACHE_NAME).then(cache => {
-            cache.put(event.request, responseToCache);
-          });
-          return fetchResponse;
-        });
+    fetch(event.request)
+      .catch(error => {
+        console.log('Fetch failed, falling back to network:', error);
+        return fetch(event.request);
       })
   );
 });
 
-// Activate event - clean up old caches
+// Activate event - clean up all caches
 self.addEventListener('activate', event => {
+  console.log('Service Worker activating...');
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME) {
-            console.log('Deleting old cache:', cacheName);
-            return caches.delete(cacheName);
-          }
+          console.log('Deleting cache:', cacheName);
+          return caches.delete(cacheName);
         })
       );
+    }).then(() => {
+      // Take control of all clients immediately
+      return self.clients.claim();
     })
   );
 });
@@ -63,7 +39,7 @@ self.addEventListener('activate', event => {
 // Listen for messages from the main thread
 self.addEventListener('message', event => {
   if (event.data && event.data.type === 'CLEAR_CACHE') {
-    console.log('Clearing all caches');
+    console.log('Clearing all caches via message');
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(cacheName => {

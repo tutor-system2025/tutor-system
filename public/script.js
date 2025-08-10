@@ -1160,40 +1160,58 @@ function logout() {
 
 // Function to refresh the app and clear cache
 function refreshApp() {
-    // Clear localStorage version to force reload
-    localStorage.removeItem('app_version');
-    
-    // Clear service worker cache if available
-    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-        navigator.serviceWorker.controller.postMessage({type: 'CLEAR_CACHE'});
-    }
-    
-    // Force reload the page
-    window.location.reload(true);
+    // Use the more aggressive cache clearing function
+    forceClearCache();
 }
 
 // Function to force clear all caches
 function forceClearCache() {
+    console.log('Force clearing all caches...');
+    
     // Clear localStorage and sessionStorage
     localStorage.clear();
     sessionStorage.clear();
+    console.log('Cleared localStorage and sessionStorage');
+    
+    // Clear all caches
+    if ('caches' in window) {
+        caches.keys().then(cacheNames => {
+            return Promise.all(
+                cacheNames.map(cacheName => {
+                    console.log('Deleting cache:', cacheName);
+                    return caches.delete(cacheName);
+                })
+            );
+        });
+    }
     
     // Clear service worker cache
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.ready.then(registration => {
-            registration.active.postMessage({type: 'CLEAR_CACHE'});
+            if (registration.active) {
+                registration.active.postMessage({type: 'CLEAR_CACHE'});
+            }
+        });
+        
+        // Unregister all service workers
+        navigator.serviceWorker.getRegistrations().then(registrations => {
+            for(let registration of registrations) {
+                registration.unregister();
+                console.log('Unregistered service worker');
+            }
         });
     }
     
-    // Unregister service worker to force fresh load
-    navigator.serviceWorker.getRegistrations().then(registrations => {
-        for(let registration of registrations) {
-            registration.unregister();
-        }
-    });
-    
-    // Force reload without cache
-    window.location.reload(true);
+    // Force reload without cache using multiple methods
+    setTimeout(() => {
+        // Method 1: Hard reload
+        window.location.reload(true);
+        
+        // Method 2: If that doesn't work, try replacing the location
+        setTimeout(() => {
+            window.location.replace(window.location.href + '?v=' + Date.now());
+        }, 100);
+    }, 100);
 }
 
 async function fetchUserData() {
@@ -1833,5 +1851,27 @@ async function updateTutorInfo() {
         setTimeout(() => {
             render();
         }, 3000);
+    }
+}
+
+// Initialize the application
+console.log('Script loaded, checking for cache busting...');
+
+// Check if we need to force cache refresh
+const lastVersion = localStorage.getItem('app_version');
+const currentVersion = '1.0.4';
+
+if (lastVersion !== currentVersion) {
+    console.log('Version changed from', lastVersion, 'to', currentVersion, '- clearing cache');
+    localStorage.setItem('app_version', currentVersion);
+    forceClearCache();
+} else {
+    // Check if user is already logged in
+    const token = localStorage.getItem('token');
+    if (token) {
+        state.user = { token };
+        setView('book');
+    } else {
+        setView('login');
     }
 } 
