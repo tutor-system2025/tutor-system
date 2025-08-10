@@ -422,6 +422,7 @@ function tutorPanelView() {
             <p><strong>Email:</strong> ${currentTutor.email}</p>
             <p><strong>Subjects:</strong> ${Array.isArray(currentTutor.subjects) ? currentTutor.subjects.join(', ') : currentTutor.subjects}</p>
             <p><strong>Description:</strong> ${currentTutor.description || currentTutor.bio || 'No description provided'}</p>
+            <button class="btn btn-primary" onclick="openEditTutorModal()">Edit Subjects & Description</button>
         </div>
         <div class="panel-section">
             <h3>Booking Requests (You as Tutor)</h3>
@@ -1087,6 +1088,18 @@ const API = {
         });
         if (!res.ok) throw new Error((await res.json()).message);
         return res.json();
+    },
+    async updateTutorInfo(token, subjects, description) {
+        const res = await fetch('/api/tutors/update', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ subjects, description })
+        });
+        if (!res.ok) throw new Error((await res.json()).message);
+        return res.json();
     }
 };
 
@@ -1684,5 +1697,103 @@ async function removeBookingsForDate(dateString) {
         setView('bookingRecords');
     } catch (error) {
         showError(error.message);
+    }
+}
+
+function openEditTutorModal() {
+    const currentTutor = state.tutors.find(t => t.email === state.user.email);
+    if (!currentTutor) {
+        alert('Tutor information not found');
+        return;
+    }
+    
+    const currentSubjects = Array.isArray(currentTutor.subjects) ? currentTutor.subjects : [currentTutor.subjects];
+    const currentDescription = currentTutor.description || currentTutor.bio || '';
+    
+    // Create subject checkboxes
+    const subjectCheckboxes = state.subjects.map(subject => {
+        const isChecked = currentSubjects.includes(subject.name) ? 'checked' : '';
+        return `<label style="display: block; margin: 5px 0;">
+            <input type="checkbox" name="subjects" value="${subject.name}" ${isChecked}>
+            ${subject.name}
+        </label>`;
+    }).join('');
+    
+    const modalHTML = `
+        <div id="editTutorModal" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Edit Subjects & Description</h3>
+                    <button class="modal-close" onclick="closeEditTutorModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div style="margin-bottom: 20px;">
+                        <label><strong>Select Subjects:</strong></label>
+                        <div style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; margin-top: 5px;">
+                            ${subjectCheckboxes}
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        <label for="tutor-description"><strong>Description:</strong></label>
+                        <textarea id="tutor-description" rows="4" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">${currentDescription}</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closeEditTutorModal()">Cancel</button>
+                    <button class="btn btn-primary" onclick="updateTutorInfo()">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Add modal to body
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+function closeEditTutorModal() {
+    const modal = document.getElementById('editTutorModal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+async function updateTutorInfo() {
+    // Get selected subjects
+    const selectedSubjects = Array.from(document.querySelectorAll('input[name="subjects"]:checked'))
+        .map(checkbox => checkbox.value);
+    
+    if (selectedSubjects.length === 0) {
+        alert('Please select at least one subject');
+        return;
+    }
+    
+    const description = document.getElementById('tutor-description').value.trim();
+    
+    if (!description) {
+        alert('Please enter a description');
+        return;
+    }
+    
+    try {
+        const result = await API.updateTutorInfo(state.user.token, selectedSubjects, description);
+        closeEditTutorModal();
+        
+        if (result.subjectsChanged) {
+            app.innerHTML = showSuccess('Tutor information updated successfully! An email notification has been sent to the manager about your subject changes.');
+        } else {
+            app.innerHTML = showSuccess('Tutor information updated successfully!');
+        }
+        
+        // Refresh tutor data
+        await fetchUserData();
+        setTimeout(() => {
+            render();
+        }, 2000);
+    } catch (error) {
+        console.error('Error updating tutor info:', error);
+        app.innerHTML = showError('Failed to update tutor information: ' + error.message);
+        setTimeout(() => {
+            render();
+        }, 3000);
     }
 } 
