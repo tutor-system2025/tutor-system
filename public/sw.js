@@ -1,7 +1,6 @@
-const CACHE_NAME = 'tutor-system-v1.0.4';
+const CACHE_NAME = 'tutor-system-v1.0.5';
 const urlsToCache = [
   '/',
-  '/script.js',
   '/index.html'
 ];
 
@@ -21,7 +20,18 @@ self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
       .then(response => {
-        // Return cached version or fetch from network
+        // For versioned files (like script.js?v=1.0.4), always fetch from network
+        if (event.request.url.includes('?v=')) {
+          return fetch(event.request).then(fetchResponse => {
+            // Don't cache versioned files to prevent cache conflicts
+            return fetchResponse;
+          }).catch(() => {
+            // If network fails, fall back to cached version if available
+            return response || fetch(event.request);
+          });
+        }
+        
+        // Return cached version for non-versioned files
         if (response) {
           return response;
         }
@@ -33,7 +43,7 @@ self.addEventListener('fetch', event => {
             return fetchResponse;
           }
           
-          // Cache the response
+          // Cache the response (only for non-versioned files)
           const responseToCache = fetchResponse.clone();
           caches.open(CACHE_NAME).then(cache => {
             cache.put(event.request, responseToCache);
