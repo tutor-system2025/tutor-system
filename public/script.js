@@ -42,14 +42,14 @@ function updateTopNav() {
         topNavButtons.innerHTML = `
             <button class="top-nav-btn" onclick="setView('login')">Login</button>
             <button class="top-nav-btn" onclick="setView('register')">Register</button>
-            <button class="top-nav-btn" onclick="refreshApp()" title="Refresh to get latest version">🔄 Refresh</button>
+            <button class="top-nav-btn" onclick="updateApp()" title="Update to get latest version">🔄 Update</button>
         `;
     } else {
         // Logged in - show user info and logout
         const displayName = state.user.username || (state.user.firstName && state.user.surname ? `${state.user.firstName} ${state.user.surname}` : 'User');
         topNavButtons.innerHTML = `
             <span class="user-info">Hi, ${displayName}</span>
-            <button class="top-nav-btn" onclick="refreshApp()" title="Refresh to get latest version">🔄 Refresh</button>
+            <button class="top-nav-btn" onclick="updateApp()" title="Update to get latest version">🔄 Update</button>
             <button class="top-nav-btn" onclick="logout()">Logout</button>
         `;
     }
@@ -1193,17 +1193,29 @@ function logout() {
     render();
 }
 
-// Function to refresh the app and clear cache
-function refreshApp() {
-    // Clear localStorage version to force reload
-    localStorage.removeItem('app_version');
+// Function to update the app with aggressive cache busting
+function updateApp() {
+    console.log('Updating app with cache busting...');
     
-    // Clear service worker cache if available
-    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-        navigator.serviceWorker.controller.postMessage({type: 'CLEAR_CACHE'});
+    // Clear all localStorage and sessionStorage
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    // Clear service worker cache
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.ready.then(registration => {
+            registration.active.postMessage({type: 'CLEAR_CACHE'});
+        });
     }
     
-    // Force reload the page
+    // Unregister all service workers to force fresh load
+    navigator.serviceWorker.getRegistrations().then(registrations => {
+        for(let registration of registrations) {
+            registration.unregister();
+        }
+    });
+    
+    // Force reload without cache
     window.location.reload(true);
 }
 
