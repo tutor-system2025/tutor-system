@@ -1172,6 +1172,30 @@ function refreshApp() {
     window.location.reload(true);
 }
 
+// Function to force clear all caches
+function forceClearCache() {
+    // Clear localStorage and sessionStorage
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    // Clear service worker cache
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.ready.then(registration => {
+            registration.active.postMessage({type: 'CLEAR_CACHE'});
+        });
+    }
+    
+    // Unregister service worker to force fresh load
+    navigator.serviceWorker.getRegistrations().then(registrations => {
+        for(let registration of registrations) {
+            registration.unregister();
+        }
+    });
+    
+    // Force reload without cache
+    window.location.reload(true);
+}
+
 async function fetchUserData() {
     state.subjects = await API.getSubjects();
     // Fetch all approved tutors for booking sessions

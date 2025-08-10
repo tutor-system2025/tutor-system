@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tutor-system-v1.0.2';
+const CACHE_NAME = 'tutor-system-v1.0.3';
 const urlsToCache = [
   '/',
   '/script.js',
