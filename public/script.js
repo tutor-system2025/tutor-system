@@ -1109,44 +1109,7 @@ const API = {
     }
 };
 
-// Add cache busting test function (one-time use)
-function testCacheBusting() {
-    // Check if cache has already been busted
-    if (localStorage.getItem('cacheBusted') === 'true') {
-        console.log('Cache has already been busted. No action needed.');
-        alert('Cache has already been cleared. The website is up to date!');
-        return;
-    }
-    
-    console.log('=== Cache Busting Test ===');
-    console.log('Script version:', document.currentScript?.src || 'Unknown');
-    console.log('LocalStorage cleared:', Object.keys(localStorage).length === 0);
-    console.log('SessionStorage cleared:', Object.keys(sessionStorage).length === 0);
-    
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(registrations => {
-            console.log('Service Workers registered:', registrations.length);
-            registrations.forEach((registration, index) => {
-                console.log(`Service Worker ${index + 1}:`, registration.scope);
-            });
-        });
-    }
-    
-    // Mark cache as busted before clearing
-    localStorage.setItem('cacheBusted', 'true');
-    
-    // Test cache clearing
-    console.log('Testing cache clearing...');
-    alert('Cache cleared! The page will reload with the latest version.');
-    forceClearCache();
-}
 
-// Function to reset cache busting flag (for future updates)
-function resetCacheBusting() {
-    localStorage.removeItem('cacheBusted');
-    console.log('Cache busting flag reset. You can now use cache busting again.');
-    alert('Cache busting flag reset! You can now use the cache busting test again.');
-}
 
 // Add test button to login view for easy access
 function loginView() {
@@ -1173,8 +1136,6 @@ function loginView() {
                             <p class="text-center mt-3">
                                 Don't have an account? <a href="#" onclick="setView('register')">Register here</a>
                             </p>
-                            <button class="btn btn-secondary btn-sm btn-block mt-2" onclick="testCacheBusting()">Test Cache Busting</button>
-                            <button class="btn btn-outline-secondary btn-sm btn-block mt-1" onclick="resetCacheBusting()">Reset Cache Flag</button>
                         </div>
                     </div>
                 </div>
@@ -1246,37 +1207,7 @@ function refreshApp() {
     window.location.reload(true);
 }
 
-// Function to force clear all caches
-function forceClearCache() {
-    // Store the cache busted flag
-    const cacheBusted = localStorage.getItem('cacheBusted');
-    
-    // Clear localStorage and sessionStorage
-    localStorage.clear();
-    sessionStorage.clear();
-    
-    // Restore the cache busted flag
-    if (cacheBusted) {
-        localStorage.setItem('cacheBusted', cacheBusted);
-    }
-    
-    // Clear service worker cache
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.ready.then(registration => {
-            registration.active.postMessage({type: 'CLEAR_CACHE'});
-        });
-    }
-    
-    // Unregister service worker to force fresh load
-    navigator.serviceWorker.getRegistrations().then(registrations => {
-        for(let registration of registrations) {
-            registration.unregister();
-        }
-    });
-    
-    // Force reload without cache
-    window.location.reload(true);
-}
+
 
 async function fetchUserData() {
     state.subjects = await API.getSubjects();
