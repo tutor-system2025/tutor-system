@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tutor-system-v1.0.1';
+const CACHE_NAME = 'tutor-system-v1.0.2';
 const urlsToCache = [
   '/',
   '/script.js',
@@ -23,52 +23,20 @@ self.addEventListener('fetch', event => {
       .then(response => {
         // Return cached version or fetch from network
         if (response) {
-          // Check if the cached version is still valid
-          const cacheTime = response.headers.get('sw-cache-time');
-          const now = Date.now();
-          
-          // If cache is older than 1 hour, fetch fresh version
-          if (!cacheTime || (now - parseInt(cacheTime)) > 3600000) {
-            return fetch(event.request).then(fetchResponse => {
-              // Cache the fresh response
-              const responseToCache = fetchResponse.clone();
-              caches.open(CACHE_NAME).then(cache => {
-                const headers = new Headers(fetchResponse.headers);
-                headers.append('sw-cache-time', now.toString());
-                const responseWithTime = new Response(fetchResponse.body, {
-                  status: fetchResponse.status,
-                  statusText: fetchResponse.statusText,
-                  headers: headers
-                });
-                cache.put(event.request, responseWithTime);
-              });
-              return fetchResponse;
-            }).catch(() => {
-              // If fetch fails, return cached version
-              return response;
-            });
-          }
           return response;
         }
         
         // If not in cache, fetch from network
         return fetch(event.request).then(fetchResponse => {
-          // Don't cache non-GET requests
-          if (event.request.method !== 'GET') {
+          // Don't cache non-GET requests or non-successful responses
+          if (event.request.method !== 'GET' || !fetchResponse || fetchResponse.status !== 200) {
             return fetchResponse;
           }
           
           // Cache the response
           const responseToCache = fetchResponse.clone();
           caches.open(CACHE_NAME).then(cache => {
-            const headers = new Headers(fetchResponse.headers);
-            headers.append('sw-cache-time', Date.now().toString());
-            const responseWithTime = new Response(fetchResponse.body, {
-              status: fetchResponse.status,
-              statusText: fetchResponse.statusText,
-              headers: headers
-            });
-            cache.put(event.request, responseWithTime);
+            cache.put(event.request, responseToCache);
           });
           return fetchResponse;
         });
