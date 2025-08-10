@@ -1168,10 +1168,9 @@ function refreshApp() {
 function forceClearCache() {
     console.log('Force clearing all caches...');
     
-    // Clear localStorage and sessionStorage
-    localStorage.clear();
+    // Clear sessionStorage but preserve app_version in localStorage
     sessionStorage.clear();
-    console.log('Cleared localStorage and sessionStorage');
+    console.log('Cleared sessionStorage');
     
     // Clear all caches
     if ('caches' in window) {
