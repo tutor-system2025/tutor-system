@@ -789,7 +789,7 @@ function bookingRecordsView() {
         </div>
     `;
     
-    document.getElementById('content').innerHTML = content;
+    return content;
 }
 
 // Booking Detail View
