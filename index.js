@@ -39,8 +39,21 @@ app.use(helmet({
 }));
 app.disable('x-powered-by');
 app.use(express.static('public', {
-  setHeaders: (res, path) => {
-    res.setHeader('Cache-Control', 'public, max-age=31536000');
+  setHeaders: (res, filePath) => {
+    // Don't cache HTML files
+    if (filePath.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    }
+    // Cache JS and CSS files for a shorter time with versioning
+    else if (filePath.endsWith('.js') || filePath.endsWith('.css')) {
+      res.setHeader('Cache-Control', 'public, max-age=3600'); // 1 hour
+    }
+    // Cache other static files for longer
+    else {
+      res.setHeader('Cache-Control', 'public, max-age=86400'); // 24 hours
+    }
   }
 }));
 
@@ -82,6 +95,32 @@ const authenticateToken = (req, res, next) => {
 // Health check endpoint for Render
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
+// Serve index.html with cache busting
+app.get('/', (req, res) => {
+  const fs = require('fs');
+  const path = require('path');
+  
+  try {
+    let html = fs.readFileSync(path.join(__dirname, 'public', 'index.html'), 'utf8');
+    
+    // Generate a version based on file modification time
+    const scriptPath = path.join(__dirname, 'public', 'script.js');
+    const scriptStats = fs.statSync(scriptPath);
+    const version = Math.floor(scriptStats.mtime.getTime() / 1000); // Unix timestamp
+    
+    // Replace the script tag with version
+    html = html.replace(/src="script\.js(\?v=[^"]*)?"/g, `src="script.js?v=${version}"`);
+    
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    res.send(html);
+  } catch (error) {
+    console.error('Error serving index.html:', error);
+    res.status(500).send('Internal Server Error');
+  }
 });
 
 // Routes
