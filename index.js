@@ -15,22 +15,23 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// Remove any existing CSP headers and disable all security headers
+// Add these middleware functions at the top of your Express app
 app.use((req, res, next) => {
+  // Remove any existing CSP headers
   res.removeHeader('Content-Security-Policy');
   res.removeHeader('X-Content-Security-Policy');
   res.removeHeader('X-WebKit-CSP');
+  
+  // Disable security headers that might interfere with caching
   res.removeHeader('X-Frame-Options');
-  res.removeHeader('X-XSS-Protection');
   res.removeHeader('X-Content-Type-Options');
-  res.removeHeader('Referrer-Policy');
-  res.removeHeader('Permissions-Policy');
+  res.removeHeader('X-XSS-Protection');
   next();
 });
 
 // Force a permissive CSP header
 app.use((req, res, next) => {
-  res.setHeader('Content-Security-Policy', "script-src * 'unsafe-inline' 'unsafe-eval';");
+  res.setHeader('Content-Security-Policy', "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:;");
   next();
 });
 
@@ -38,24 +39,28 @@ app.use(helmet({
   contentSecurityPolicy: false
 }));
 app.disable('x-powered-by');
+
+// Cache control middleware
 app.use(express.static('public', {
-  setHeaders: (res, filePath) => {
-    // Don't cache HTML files
-    if (filePath.endsWith('.html')) {
+  setHeaders: (res, path) => {
+    if (path.endsWith('.html') || path.endsWith('.js') || path.endsWith('.css')) {
       res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
       res.setHeader('Pragma', 'no-cache');
       res.setHeader('Expires', '0');
-    }
-    // Cache JS and CSS files for a shorter time with versioning
-    else if (filePath.endsWith('.js') || filePath.endsWith('.css')) {
-      res.setHeader('Cache-Control', 'public, max-age=3600'); // 1 hour
-    }
-    // Cache other static files for longer
-    else {
-      res.setHeader('Cache-Control', 'public, max-age=86400'); // 24 hours
+    } else {
+      res.setHeader('Cache-Control', 'public, max-age=31536000');
     }
   }
 }));
+
+// Version endpoint for dynamic cache busting
+app.get('/api/version', (req, res) => {
+  res.json({
+    version: '1.1',
+    timestamp: new Date().toISOString(),
+    build: Math.random().toString(36).substring(7)
+  });
+});
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI + '/tutorsystem', {
