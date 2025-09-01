@@ -1,14 +1,17 @@
-// Cache busting - Force reload if this is an old version
+// Add this at the very top of your script.js file
 (function() {
-    const currentVersion = '1.0.1';
+    const currentVersion = '1.1';
     const storedVersion = localStorage.getItem('app_version');
     
-    if (storedVersion && storedVersion !== currentVersion) {
+    if (storedVersion !== currentVersion) {
+        console.log('Version changed, clearing cache and reloading...');
+        localStorage.clear();
         localStorage.setItem('app_version', currentVersion);
-        // Force reload to get the new version
-        window.location.reload(true);
-    } else if (!storedVersion) {
-        localStorage.setItem('app_version', currentVersion);
+        
+        // Force reload with cache busting parameter
+        const url = new URL(window.location);
+        url.searchParams.set('v', currentVersion);
+        window.location.href = url.toString();
     }
 })();
 

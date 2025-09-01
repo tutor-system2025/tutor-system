@@ -1,10 +1,12 @@
-const CACHE_NAME = 'tutor-system-v1.0.5';
+const CACHE_NAME = 'tutor-system-v1.1';
 const urlsToCache = [
   '/',
-  '/index.html'
+  '/index.html',
+  '/script.js',
+  '/sw.js'
 ];
 
-// Install event - cache resources
+// Install event - cache initial resources
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -15,43 +17,44 @@ self.addEventListener('install', event => {
   );
 });
 
-// Fetch event - serve from cache or network
+// Fetch event - network first for dynamic content, cache first for static assets
 self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        // For versioned files (like script.js?v=1.0.4), always fetch from network
-        if (event.request.url.includes('?v=')) {
-          return fetch(event.request).then(fetchResponse => {
-            // Don't cache versioned files to prevent cache conflicts
-            return fetchResponse;
-          }).catch(() => {
-            // If network fails, fall back to cached version if available
-            return response || fetch(event.request);
-          });
-        }
-        
-        // Return cached version for non-versioned files
-        if (response) {
-          return response;
-        }
-        
-        // If not in cache, fetch from network
-        return fetch(event.request).then(fetchResponse => {
-          // Don't cache non-GET requests or non-successful responses
-          if (event.request.method !== 'GET' || !fetchResponse || fetchResponse.status !== 200) {
-            return fetchResponse;
-          }
+  const url = new URL(event.request.url);
+  
+  // Network first strategy for HTML, JS, CSS, and API calls
+  if (url.pathname.endsWith('.html') || 
+      url.pathname.endsWith('.js') || 
+      url.pathname.endsWith('.css') ||
+      url.pathname.startsWith('/api/')) {
+    
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          // Clone the response before using it
+          const responseClone = response.clone();
           
-          // Cache the response (only for non-versioned files)
-          const responseToCache = fetchResponse.clone();
-          caches.open(CACHE_NAME).then(cache => {
-            cache.put(event.request, responseToCache);
-          });
-          return fetchResponse;
-        });
-      })
-  );
+          // Cache the fresh response
+          caches.open(CACHE_NAME)
+            .then(cache => {
+              cache.put(event.request, responseClone);
+            });
+          
+          return response;
+        })
+        .catch(() => {
+          // Fallback to cache if network fails
+          return caches.match(event.request);
+        })
+    );
+  } else {
+    // Cache first strategy for other assets
+    event.respondWith(
+      caches.match(event.request)
+        .then(response => {
+          return response || fetch(event.request);
+        })
+    );
+  }
 });
 
 // Activate event - clean up old caches
@@ -68,19 +71,4 @@ self.addEventListener('activate', event => {
       );
     })
   );
-});
-
-// Listen for messages from the main thread
-self.addEventListener('message', event => {
-  if (event.data && event.data.type === 'CLEAR_CACHE') {
-    console.log('Clearing all caches');
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          console.log('Deleting cache:', cacheName);
-          return caches.delete(cacheName);
-        })
-      );
-    });
-  }
 }); 
